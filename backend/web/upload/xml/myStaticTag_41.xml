@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<VAST version="2.0">
+            <Ad id="static">
+            <InLine>
+            <AdSystem>Static VAST Template</AdSystem>
+            <AdTitle>Static VAST Tag</AdTitle>
+
+            <Creatives>
+            <Creative>
+            <Linear>
+            <Duration>00:00:08</Duration>
+            <VideoClicks>
+            <ClickThrough>http://www.jwplayer.com/</ClickThrough>
+            </VideoClicks>
+            <MediaFiles>
+            <MediaFile type="video/mp4" bitrate="300" width="480" height="270">
+            https://drwqnsbdhm8v.cloudfront.net/adVideos/adVideos_41_1200_1592468517066.mp4
+            </MediaFile>
+            </MediaFiles>
+            </Linear>
+            </Creative>
+            </Creatives>
+            </InLine>
+            </Ad>
+            </VAST>

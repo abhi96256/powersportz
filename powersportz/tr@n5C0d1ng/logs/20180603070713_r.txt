@@ -1,0 +1,216 @@
+
+
+===============
+
+Result:
+{
+  "state" : "COMPLETED",
+  "version" : "2012-09-25",
+  "jobId" : "1528009611574-j1g5gk",
+  "pipelineId" : "1451730880850-w9fp5d",
+  "input" : {
+    "key" : "adVideos/adVideos_17_1200_1528009598621.mp4",
+    "frameRate" : "auto",
+    "resolution" : "auto",
+    "aspectRatio" : "auto",
+    "interlaced" : "auto",
+    "container" : "auto"
+  },
+  "inputCount" : 1,
+  "outputs" : [ {
+    "id" : "1",
+    "presetId" : "1452590662375-7zk8y9",
+    "key" : "adVideos/Streaming/mp4_adVideos_17_1200_1528009598621",
+    "thumbnailPattern" : "adVideos/Thumb/17/Thumb_adVideos_17_1200_1528009598621_{count}",
+    "rotate" : "auto",
+    "status" : "Complete",
+    "duration" : 21,
+    "width" : 1000,
+    "height" : 562
+  }, {
+    "id" : "2",
+    "presetId" : "1459860718155-f6pg97",
+    "key" : "adVideos/Streaming/hls1080m_adVideos_17_1200_1528009598621",
+    "thumbnailPattern" : "",
+    "rotate" : "auto",
+    "segmentDuration" : 5.0,
+    "status" : "Complete",
+    "statusDetail" : "Some individual segment files for this output have a higher bit rate than the average bit rate of the transcoded media. Playlists including this output will record a higher bit rate than the rate specified by the preset.",
+    "duration" : 21,
+    "width" : 1920,
+    "height" : 1080
+  }, {
+    "id" : "3",
+    "presetId" : "1459858323913-4yaqn0",
+    "key" : "adVideos/Streaming/hls720m_adVideos_17_1200_1528009598621",
+    "thumbnailPattern" : "",
+    "rotate" : "auto",
+    "segmentDuration" : 5.0,
+    "status" : "Complete",
+    "statusDetail" : "Some individual segment files for this output have a higher bit rate than the average bit rate of the transcoded media. Playlists including this output will record a higher bit rate than the rate specified by the preset.",
+    "duration" : 21,
+    "width" : 1280,
+    "height" : 720
+  }, {
+    "id" : "4",
+    "presetId" : "1459861212579-rp11bg",
+    "key" : "adVideos/Streaming/hls480m_adVideos_17_1200_1528009598621",
+    "thumbnailPattern" : "",
+    "rotate" : "auto",
+    "segmentDuration" : 5.0,
+    "status" : "Complete",
+    "statusDetail" : "Some individual segment files for this output have a higher bit rate than the average bit rate of the transcoded media. Playlists including this output will record a higher bit rate than the rate specified by the preset.",
+    "duration" : 21,
+    "width" : 854,
+    "height" : 480
+  }, {
+    "id" : "5",
+    "presetId" : "1459861296780-5uv8tp",
+    "key" : "adVideos/Streaming/hls360m_adVideos_17_1200_1528009598621",
+    "thumbnailPattern" : "",
+    "rotate" : "auto",
+    "segmentDuration" : 5.0,
+    "status" : "Complete",
+    "statusDetail" : "Some individual segment files for this output have a higher bit rate than the average bit rate of the transcoded media. Playlists including this output will record a higher bit rate than the rate specified by the preset.",
+    "duration" : 21,
+    "width" : 640,
+    "height" : 360
+  }, {
+    "id" : "6",
+    "presetId" : "1459862012890-6hoa19",
+    "key" : "adVideos/Streaming/hls240m_adVideos_17_1200_1528009598621",
+    "thumbnailPattern" : "",
+    "rotate" : "auto",
+    "segmentDuration" : 5.0,
+    "status" : "Complete",
+    "statusDetail" : "Some individual segment files for this output have a higher bit rate than the average bit rate of the transcoded media. Playlists including this output will record a higher bit rate than the rate specified by the preset.",
+    "duration" : 21,
+    "width" : 426,
+    "height" : 240
+  } ],
+  "playlists" : [ {
+    "name" : "adVideos_17_1200_1528009598621",
+    "format" : "HLSv3",
+    "outputKeys" : [ "adVideos/Streaming/hls1080m_adVideos_17_1200_1528009598621", "adVideos/Streaming/hls720m_adVideos_17_1200_1528009598621", "adVideos/Streaming/hls480m_adVideos_17_1200_1528009598621", "adVideos/Streaming/hls360m_adVideos_17_1200_1528009598621", "adVideos/Streaming/hls240m_adVideos_17_1200_1528009598621" ],
+    "status" : "Complete"
+  } ]
+}Key domain: sns.ap-northeast-1.amazonaws.com is not equal to allowed source domain:sns:ap-northeast-1.amazonaws.com
+
+
+ In notification.
+
+ Completed 
+
+ Before connection 
+
+ after connection 
+
+ Query: 
+UPDATE customadvertisement SET URL = 'adVideos_17_1200_1528009598621.m3u8' WHERE VideoURL= 'adVideos/adVideos_17_1200_1528009598621.mp4' 
+
+
+
+stdClass Object
+(
+    [Type] => Notification
+    [MessageId] => 0e2d9e00-4377-535a-9e03-cd8dd69767fb
+    [TopicArn] => arn:aws:sns:ap-northeast-1:731329424271:Transcoding_video_callback
+    [Subject] => Amazon Elastic Transcoder has finished transcoding job 1528009611574-j1g5gk.
+    [Message] => {
+  "state" : "COMPLETED",
+  "version" : "2012-09-25",
+  "jobId" : "1528009611574-j1g5gk",
+  "pipelineId" : "1451730880850-w9fp5d",
+  "input" : {
+    "key" : "adVideos/adVideos_17_1200_1528009598621.mp4",
+    "frameRate" : "auto",
+    "resolution" : "auto",
+    "aspectRatio" : "auto",
+    "interlaced" : "auto",
+    "container" : "auto"
+  },
+  "inputCount" : 1,
+  "outputs" : [ {
+    "id" : "1",
+    "presetId" : "1452590662375-7zk8y9",
+    "key" : "adVideos/Streaming/mp4_adVideos_17_1200_1528009598621",
+    "thumbnailPattern" : "adVideos/Thumb/17/Thumb_adVideos_17_1200_1528009598621_{count}",
+    "rotate" : "auto",
+    "status" : "Complete",
+    "duration" : 21,
+    "width" : 1000,
+    "height" : 562
+  }, {
+    "id" : "2",
+    "presetId" : "1459860718155-f6pg97",
+    "key" : "adVideos/Streaming/hls1080m_adVideos_17_1200_1528009598621",
+    "thumbnailPattern" : "",
+    "rotate" : "auto",
+    "segmentDuration" : 5.0,
+    "status" : "Complete",
+    "statusDetail" : "Some individual segment files for this output have a higher bit rate than the average bit rate of the transcoded media. Playlists including this output will record a higher bit rate than the rate specified by the preset.",
+    "duration" : 21,
+    "width" : 1920,
+    "height" : 1080
+  }, {
+    "id" : "3",
+    "presetId" : "1459858323913-4yaqn0",
+    "key" : "adVideos/Streaming/hls720m_adVideos_17_1200_1528009598621",
+    "thumbnailPattern" : "",
+    "rotate" : "auto",
+    "segmentDuration" : 5.0,
+    "status" : "Complete",
+    "statusDetail" : "Some individual segment files for this output have a higher bit rate than the average bit rate of the transcoded media. Playlists including this output will record a higher bit rate than the rate specified by the preset.",
+    "duration" : 21,
+    "width" : 1280,
+    "height" : 720
+  }, {
+    "id" : "4",
+    "presetId" : "1459861212579-rp11bg",
+    "key" : "adVideos/Streaming/hls480m_adVideos_17_1200_1528009598621",
+    "thumbnailPattern" : "",
+    "rotate" : "auto",
+    "segmentDuration" : 5.0,
+    "status" : "Complete",
+    "statusDetail" : "Some individual segment files for this output have a higher bit rate than the average bit rate of the transcoded media. Playlists including this output will record a higher bit rate than the rate specified by the preset.",
+    "duration" : 21,
+    "width" : 854,
+    "height" : 480
+  }, {
+    "id" : "5",
+    "presetId" : "1459861296780-5uv8tp",
+    "key" : "adVideos/Streaming/hls360m_adVideos_17_1200_1528009598621",
+    "thumbnailPattern" : "",
+    "rotate" : "auto",
+    "segmentDuration" : 5.0,
+    "status" : "Complete",
+    "statusDetail" : "Some individual segment files for this output have a higher bit rate than the average bit rate of the transcoded media. Playlists including this output will record a higher bit rate than the rate specified by the preset.",
+    "duration" : 21,
+    "width" : 640,
+    "height" : 360
+  }, {
+    "id" : "6",
+    "presetId" : "1459862012890-6hoa19",
+    "key" : "adVideos/Streaming/hls240m_adVideos_17_1200_1528009598621",
+    "thumbnailPattern" : "",
+    "rotate" : "auto",
+    "segmentDuration" : 5.0,
+    "status" : "Complete",
+    "statusDetail" : "Some individual segment files for this output have a higher bit rate than the average bit rate of the transcoded media. Playlists including this output will record a higher bit rate than the rate specified by the preset.",
+    "duration" : 21,
+    "width" : 426,
+    "height" : 240
+  } ],
+  "playlists" : [ {
+    "name" : "adVideos_17_1200_1528009598621",
+    "format" : "HLSv3",
+    "outputKeys" : [ "adVideos/Streaming/hls1080m_adVideos_17_1200_1528009598621", "adVideos/Streaming/hls720m_adVideos_17_1200_1528009598621", "adVideos/Streaming/hls480m_adVideos_17_1200_1528009598621", "adVideos/Streaming/hls360m_adVideos_17_1200_1528009598621", "adVideos/Streaming/hls240m_adVideos_17_1200_1528009598621" ],
+    "status" : "Complete"
+  } ]
+}
+    [Timestamp] => 2018-06-03T07:07:12.467Z
+    [SignatureVersion] => 1
+    [Signature] => CpZPk+1yjxMOJ+eVNK39Sg/M83t/wjBBO/fg6vVF5UtOR7jocrXLndNFxH/EOxcEpeTtglOgiXsQi4Rp3Kp6/Pu0f3Z9PrIQ/EJ4rhm/QKic2KPjsdWxQvY0ZMnoJ7Cd1oVAfoXwiwMqV+2U34vYstyNNuskxsOh78X9jl4a+P74Jp8RmvDYVrgK+0uiZhL1LIoQPI5TFj6HBeo77lYiXtTFNpRpEgzsN7sNRjICASDYsXM7Mne61Ul7bnCW+7zpW8gg3A2zRZSTRR4hGkf3basR6s5PhuQ1igvlWe1XMeR8AWXKKNsYNB0vXK8nELFEOhlF5nCCTg014ICE16lAaw==
+    [SigningCertURL] => https://sns.ap-northeast-1.amazonaws.com/SimpleNotificationService-eaea6120e66ea12e88dcd8bcbddca752.pem
+    [UnsubscribeURL] => https://sns.ap-northeast-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:ap-northeast-1:731329424271:Transcoding_video_callback:c4ebbcc6-0caf-4eda-998c-a5ec4833bd62
+)

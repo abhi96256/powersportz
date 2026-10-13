@@ -1,0 +1,546 @@
+<?php
+
+use yii\helpers\Html;
+use yii\helpers\Url;
+use yii\web\View;
+$this->registerJsFile('../js/endless_scroll_min.js', ['depends' => [\yii\web\JqueryAsset::className()]]);
+/* @var $this yii\web\View */
+/* @var $this yii\web\View */
+
+$cookies = Yii::$app->request->cookies;
+$actiontype = array();
+$adurl1='';$adurl2='';$adurl3='';
+if (!empty($modelMember)) {
+    foreach ($modelMember as $modelMemberarray) {
+        array_push($actiontype, $modelMemberarray['Type']);
+    }
+}
+
+//$Videogeographics
+//var_dump($Customadvertise);
+$HomePageModel->scroll_time = $HomePageModel->scroll_time * 10;
+ 
+?>
+<script type="text/javascript"  src='https://content.jwplatform.com/libraries/DkwOvSfA.js' ></script>
+<div class="col-md-11 single-page"> 
+<!---------Left Sidebar -------->
+<?php   
+
+if(empty($Videogeographics)){
+    $reqquesturi=$_SERVER['REQUEST_URI'];
+    $reqquesturi = ltrim($reqquesturi,'/');
+    $this->title = $searchModel[0]['Title'].' ';
+    $this->params['breadcrumbs'][] = $this->title;
+                        $newtitle = str_replace(' ', '+',$searchModel[0]['Title']);
+       
+        Yii::$app->view->registerMetaTag([
+            'name' => 'fb:app_id',
+            //'content' => trim($searchModel[0]['description'])
+            'content' => '948450055241654'
+        ]);
+         Yii::$app->view->registerMetaTag([
+            'name' => 'og:title',
+             //'content' => 'Test Title'
+            'content' => trim($searchModel[0]['Title'])
+        ]);
+        Yii::$app->view->registerMetaTag([
+            'name' => 'og:description',
+            'content' => trim($searchModel[0]['description'])
+        ]);
+         Yii::$app->view->registerMetaTag([
+            'name' => 'og:site_name',
+            'content' => 'Power Sportz'
+        ]);
+        Yii::$app->view->registerMetaTag([
+            'name' => 'og:image',
+            'content' =>ImagesUrl($searchModel[0])
+        ]);
+        Yii::$app->view->registerMetaTag([
+            'name' => 'og:url', 
+            'content'=>Yii::$app->params['domainName'].$reqquesturi
+        ]);
+        Yii::$app->view->registerMetaTag([
+            'name' => 'og:type', 
+            'content'=>'website'
+        ]);
+        Yii::$app->view->registerMetaTag([
+            'name' => 'description',
+            'content' => $searchModel[0]['description']
+        ]);
+                Yii::$app->view->registerMetaTag([
+            'name' => 'keyword',
+            'content' => $searchModel[0]['MetaKeywords']
+        ]); 
+                                Yii::$app->view->registerMetaTag([
+            'name' => 'name',
+            'content' => $searchModel[0]['Title']
+        ]);
+            Yii::$app->view->registerMetaTag([
+            'name' => 'image',
+            'content' => ImagesUrl($searchModel[0])
+        ]);
+
+                \Yii::$app->view->registerMetaTag([
+            'name' => 'twitter:card',
+            'content' => ImagesUrl($searchModel[0])
+        ]);
+  Yii::$app->view->registerMetaTag([
+            'name' => 'twitter:title',
+            'content' => $searchModel[0]['Title']
+        ]);
+        Yii::$app->view->registerMetaTag([
+            'name' => 'twitter:description',
+            'content' =>  $searchModel[0]['description']
+        ]);
+        Yii::$app->view->registerMetaTag([
+            'name' => 'twitter:image',
+            'content' => ImagesUrl($searchModel[0])
+        ]); 
+$socialcontentvar="<ul class='socialiconsul'>"
+."<li><a href='#' class='socialsharebutton' data-videoid='".$searchModel[0]['ID']."' data-url='http://www.facebook.com/share.php?u=".Yii::$app->params['domainName'].$reqquesturi."'><i class='fa fa-facebook'></i></a></li>"
+."<li><a href='#' class='socialsharebutton' data-videoid='".$searchModel[0]['ID']."' data-url='https://plus.google.com/share?url=".Yii::$app->params['domainName'].$reqquesturi."'><i class='fa fa-google-plus'></i></a></li>"
+."<li><a href='#' class='socialsharebutton' data-videoid='".$searchModel[0]['ID']."' data-url='http://twitter.com/share?text=".$newtitle."&url=".Yii::$app->params['domainName'].$reqquesturi."'><i class='fa fa-twitter'></i></a></li>"
+."<li><a href='#' id='pintrestshare' class='socialsharebutton' data-videoid='".$searchModel[0]['ID']."' data-url='http://pinterest.com/pin/create/bookmarklet/?media=".ImagesUrl($searchModel[0]) ."&url=".Yii::$app->params['domainName'].$_SERVER['REQUEST_URI']."&description=".$searchModel[0]['Title']."'><i class='fa fa-pinterest'></i></a></li>"
+."<li><a href='#' class='socialsharebutton' data-videoid='".$searchModel[0]['ID']."' data-url='http://www.linkedin.com/shareArticle?mini=true&url=".Yii::$app->params['domainName'].$reqquesturi."&title=".$searchModel[0]['Title']."&source=[SOURCE/DOMAIN]'><i class='fa fa-linkedin'></i></a></li></ul>";
+?>
+    <div class="col-md-7 details-vedio" style="position:relative">
+        <div class="overlapdiv">
+        <p class="reloadbutton"><a href="#" class="reloadlink"><i class="fa fa-refresh"></i></a></p>
+        <p class="showfullvideo"><a href="<?php echo Url::toRoute(['video/index', 'videoid' => $searchModel[0]['FullVideoId']]);?>"><?php echo Yii::t('frontend','watchfullvideo')?></a></p></div>
+        <div id="myElement">Loading the player...</div>
+<?php
+if($HomePageModel->NewsOrAdd=='1'){
+  echo '<div class="breaking-news" style="display:none">
+      <div class="breaking-main">
+    <div class="breaking-logo"></div>
+    <div class="breaking-logo2"></div>
+    </div>
+    <div class="breaking-color">
+    <div id="s1" class="is">';
+foreach($newsModel as $newsModelarray){
+echo '<a href="'.$newsModelarray->LandingLink.'" target="_blank">'.$newsModelarray->Title.'</a>';
+}
+echo  '</div></div></div>';
+}
+else{
+    echo  ' <div>
+            <ul class="rslides" id="slider1">';
+    foreach($Advertise as $Advertisevar){
+       
+echo  '<li><a href="'.$Advertisevar['LandingLink'].'" target="_blank"><img src="'.S3_BUCKETABSOLUTE_PATH.'/'.ADVERISEMENT.'/'.$Advertisevar['ImagePath'].'" /></a></li>';    
+    }
+   echo  '</ul></div>';
+}
+?>
+<?php
+$adurmidtime=$searchModel[0]['StartMidAdvertisementTime'];
+if(!empty($Customadvertise)){
+foreach($Customadvertise as $Customadvertisesub){
+                    $customadarraylist[$Customadvertisesub['Type']]=$Customadvertisesub['XML'];
+                    $customadarraylist['Time']=$Customadvertisesub['MidTime'];
+        }
+        if (array_key_exists("1",$customadarraylist)){
+                    $adurl1= CustomAdvertisePath().$customadarraylist['1'].'.xml';
+        }
+        else{
+                    $adurl1= $searchModel[0]['PreAdvertisementTagURL'];
+        }
+                if (array_key_exists("2",$customadarraylist)){
+                    $adurl2= CustomAdvertisePath().$customadarraylist['2'].'.xml';
+                    $adurmidtime=$customadarraylist['Time'];
+        }
+        else{
+                    $adurl2= $searchModel[0]['MidAdvertisementTagURL'];
+                    $adurmidtime=$searchModel[0]['StartMidAdvertisementTime'];
+        }
+                if (array_key_exists("3",$customadarraylist)){
+                    $adurl3= CustomAdvertisePath().$customadarraylist['3'].'.xml';
+        }
+        else{
+                    $adurl3= $searchModel[0]['PostAdvertisementTagURL'];
+        }
+}
+else{
+                    $adurl1= $searchModel[0]['PreAdvertisementTagURL'];
+                    $adurl2= $searchModel[0]['MidAdvertisementTagURL'];
+                    $adurl3= $searchModel[0]['PostAdvertisementTagURL'];
+}
+        
+        /*$highResolutionURL = str_replace('mp4_','webm_',$searchModel[0]['VideoStreamURL']);
+        $lowResolutionURL = str_replace('mp4_','web180m_',$searchModel[0]['VideoStreamURL']);
+        if(!checklowqualityvideo(S3_VIDEO_BUCKETABSOLUTE_PATH.$lowResolutionURL)){
+        $lowResolutionURL=$searchModel[0]['VideoStreamURL'];
+        }
+
+         *androidhls: true,
+         * file:"'.S3_VIDEO_BUCKETABSOLUTE_PATH_AUTO. $searchModel[0]['VideoStreamURL'].'.m3u8",
+       
+         *  playlist: [{
+                             
+                            sources: [                                        
+                                {
+                                    file: "' . S3_VIDEO_BUCKETABSOLUTE_PATH . $highResolutionURL . '",
+                                    label: "1080p",
+                                    type: "mp4"
+                                },
+                                {
+                                    file: "' . S3_VIDEO_BUCKETABSOLUTE_PATH . $highmediumResolutionURL . '",
+                                    label: "720p",
+                                    type: "mp4"
+                                },
+                                {
+                                    file: "' . S3_VIDEO_BUCKETABSOLUTE_PATH . $mediumResolutionURL . '",
+                                    label: "480p",
+                                    type: "mp4"
+                                },
+                                {
+                                    file: "' . S3_VIDEO_BUCKETABSOLUTE_PATH . $lowmediumResolutionURL . '",
+                                    label: "360p",
+                                    type: "mp4"
+                                },
+                                {
+                                    file: "' . S3_VIDEO_BUCKETABSOLUTE_PATH . $lowResolutionURL . '",
+                                    label: "240p",
+                                    default: "true",
+                                    type: "mp4"
+                                }
+                        ]
+                        }],        */
+
+        
+        $highResolutionURL = str_replace('mp4_','hls1080m_',$searchModel[0]['VideoStreamURL']);
+        $highmediumResolutionURL = str_replace('mp4_','hls720m_',$searchModel[0]['VideoStreamURL']);
+        $mediumResolutionURL = str_replace('mp4_','hls480m_',$searchModel[0]['VideoStreamURL']);
+        $lowmediumResolutionURL = str_replace('mp4_','hls360m_',$searchModel[0]['VideoStreamURL']);
+        $lowResolutionURL = str_replace('mp4_','hls240m_',$searchModel[0]['VideoStreamURL']);
+ 
+                                             
+        $this->registerJs('
+                        var checkcookievar=0;
+                        var playerInstance = jwplayer("myElement");
+                        playerInstance.setup({
+                        image: "' .Main_VideoUrl(ImagesUrl($searchModel[0])). '",
+                        file:"'.S3_VIDEO_BUCKETABSOLUTE_PATH_AUTO. $searchModel[0]['VideoStreamURL'].'.m3u8",                            
+                        width:"100%",
+                        //width: 625,
+                        //height:460,
+                        androidhls: true,
+                        autostart: false,
+                        preload : "auto",
+                        advertising: {
+                        client: "vast",
+                        schedule: {
+                            adbreak1: {
+                            offset: "pre",
+                            tag: "' .$adurl1. '",
+                            },
+                            adbreak2: {
+                            offset:"'.$adurmidtime.'",
+                            tag: "' .$adurl2. '",
+                            },
+                            adbreak3: {
+                            offset: "post",
+                            tag: "' .$adurl3. '",
+                            },
+                        }
+                    }
+                    });');
+        if($searchModel[0]['FullVideoId']!=''){
+        $this->registerJs('playerInstance.onComplete(function(){$(".overlapdiv").show();});');
+        }
+                    
+                    $this->registerJs('$("#likelink").click(function () {
+                            var videoid=$(this).data("videoid");
+                if($(this).hasClass("videolikelink")){
+                            var URL="'.Url::toRoute(["video/videolike"]).'";
+                            $(this).toggleClass("videolikelink");
+                            $(this).parent("div").addClass("tab-active");
+                            $(".liketext").text("' . Yii::t("frontend", "unlike") . '");
+                }
+                else
+                {
+                            var URL="'.Url::toRoute(["video/videounlike"]).'";
+                            $(this).toggleClass("videolikelink");
+                            $(this).parent("div").removeClass("tab-active");
+                            $(".liketext").text("' . Yii::t("frontend", "likethisvideo") . '");
+                            }
+                            $.ajax({
+                            type: "POST",
+                            data: {Videoid:videoid,Type:1},
+                            url: URL,
+                            success: function(msg){
+                            $(".displynumbr").text(msg);
+                }
+                            });                                       
+                            });
+                    $("#watchlink").click(function () {
+                            var videoid=$(this).data("videoid");
+                if($(this).hasClass("videowatchlink")){
+                            var URL="'.Url::toRoute(["video/videolike"]).'";
+                            $(this).toggleClass("videowatchlink");
+                            $(this).parent("div").addClass("tab-active");
+                            $(".watchlisttext").text("' . Yii::t("frontend", "removewatchlist") . '");
+                }
+                else
+                {
+                                var URL="'.Url::toRoute(["video/videounlike"]).'";
+                                 $(this).toggleClass("videowatchlink");
+                                $(this).parent("div").removeClass("tab-active");
+                                $(".watchlisttext").text("' . Yii::t("frontend", "watchlater") . '");
+                }
+                            $.ajax({
+                            type: "POST",
+                            data: {Videoid:videoid,Type:3},
+                            url: URL,
+                            success: function(msg){
+                           }
+                           });
+                           });
+                                          
+                    $("#favlink").click(function () {
+                            var videoid=$(this).data("videoid");
+                if($(this).hasClass("videofavlink")){
+                            var URL="'.Url::toRoute(["video/videolike"]).'";
+                            $(this).toggleClass("videofavlink");
+                            $(this).parent("div").addClass("tab-active");
+                            $(".favouritetext").text("' . Yii::t("frontend", "removefavourite") . '");
+                }
+                else
+                {
+                        var URL="'.Url::toRoute(["video/videounlike"]).'";
+                        $(this).toggleClass("videofavlink");
+                        $(this).parent("div").removeClass("tab-active");
+                        $(".favouritetext").text("' . Yii::t("frontend", "addtofav") . '");
+                }
+
+                            $.ajax({
+                            type: "POST",
+                            data: {Videoid:videoid,Type:2},
+                            url: URL,
+                            success: function(msg){
+                          }
+                          });
+                             });
+                     $(document).on("click", ".socialsharebutton", function() {
+                        var videoid=$(this).data("videoid");
+                        var urlto=$(this).data("url");
+                        var URL="'.Url::toRoute(["video/videolike"]).'";
+                        $.ajax({
+                        type: "POST",
+                        data: {Videoid:videoid,Type:4},
+                        url: URL,
+                        success: function(msg){
+                        var win=window.open(urlto,"_blank");
+                        win.focus();
+                        }
+                        });
+                        });
+$("[data-toggle=\'popover\']").popover({
+                    placement : "bottom",
+                    container: "body",
+                    title:"Be Social",
+                    html : true,
+                    content:"'.$socialcontentvar.'",
+                });
+                $(".reloadlink").click(function(){
+                $(".overlapdiv").hide();
+                playerInstance.play();
+});
+            ');
+                    $this->registerJs('
+             $(".owl-theme").css("display", "block");
+             $(".displaynonecls").css("display", "block");
+             $(".breaking-news").css("display", "block");
+            $("#slider1").responsiveSlides({
+            speed:'.$HomePageModel->scroll_time.'
+            });
+            $("#s1").endlessScroll({ 
+                width: "100%",
+                height:"45px",
+		steps: -2, speed:'.$HomePageModel->scroll_time.', 
+		mousestop: true });');
+$this->registerCss('
+            .is a
+            {
+            padding-left:60px;
+            }');
+        if ($cookies->has($searchModel[0]['ID'] . 'cookies')) {
+            $varcookies = 1;
+        } else {
+            $varcookies = 0;
+        }
+        ?>
+        <div class="favourite-icon-wrap">
+            <?php
+            if (in_array('3', $actiontype)) {
+                $watchlistvar = Yii::t('frontend', 'removewatchlist');
+                echo '<div class="watch-later favourite-icon tab-active"><a href="#" id="watchlink" class="videounwatchlink" data-videoid="' . $searchModel[0]["ID"] . '">';
+            } else {
+                if(Yii::$app->getUser()->isGuest){
+                
+                  $watchtourl=Url::toRoute('member/login/1');
+                  $watchlistvar = Yii::t('frontend', 'watchlater');
+                echo '<div class="watch-later favourite-icon"><a href="'.$watchtourl.'" id="watchlink" class="" data-videoid="' . $searchModel[0]["ID"] . '">';
+                }
+                else{
+                    $watchtourl='#';
+                    $watchlistvar = Yii::t('frontend', 'watchlater');
+                echo '<div class="watch-later favourite-icon"><a href="'.$watchtourl.'" id="watchlink" class="videowatchlink" data-videoid="' . $searchModel[0]["ID"] . '">';
+                }
+                
+            }
+            ?>
+            <img src="<?php echo Yii::$app->getUrlManager()->getBaseUrl();?>/images/watch-leter.png" alt="<?php echo $watchlistvar; ?>" />
+            <span class="watchlisttext"><?php echo $watchlistvar; ?></span>
+            </a></div>
+        <?php
+        if (in_array('2', $actiontype)) {
+            $favouvar = Yii::t('frontend', 'removefavourite');
+            echo '<div class="favourite favourite-icon tab-active">
+            <a href="#" id="favlink" class="videounfavlink" data-videoid="' . $searchModel[0]["ID"] . '">';
+        } else {
+                            if(Yii::$app->getUser()->isGuest){
+                
+                  $favtourl=Url::toRoute('member/login/1'); 
+                  echo '<div class="favourite favourite-icon">
+            <a href="'.$favtourl.'" id="favlink" class="" data-videoid="' . $searchModel[0]["ID"] . '">';
+                }
+                else{
+                    $favtourl='#';
+                    echo '<div class="favourite favourite-icon">
+            <a href="'.$favtourl.'" id="favlink" class="videofavlink" data-videoid="' . $searchModel[0]["ID"] . '">';
+                }
+            $favouvar = Yii::t('frontend', 'addtofav');
+            
+        }
+        ?>
+        <img src="<?php echo Yii::$app->getUrlManager()->getBaseUrl();?>/images/favourite.png" alt="<?php echo $favouvar; ?>" />
+        <span class="favouritetext"><?php echo $favouvar; ?></span></a></div>  
+
+    <?php
+    if (in_array('1', $actiontype)) {
+        $liketextvar = Yii::t('frontend', 'unlike');
+        echo '<div class="like favourite-icon tab-active"><a href="#" id="likelink" class="videounlikelink" data-videoid="' . $searchModel[0]["ID"] . '">';
+    } else {
+        
+        if (!Yii::$app->getUser()->isGuest) {
+            $liketextvar = Yii::t('frontend', 'likethisvideo');
+            echo '<div class="like favourite-icon"><a href="#" id="likelink" class="videolikelink" data-videoid="' . $searchModel[0]["ID"] . '">';
+        } else {
+            if ($varcookies == 0) {
+                $liketextvar = Yii::t('frontend', 'likethisvideo');
+                echo '<div class="like favourite-icon"><a href="#" id="likelink" class="videolikelink" data-videoid="' . $searchModel[0]["ID"] . '">';
+            } else {
+                $liketextvar = Yii::t('frontend', 'unlike');
+                echo '<div class="like favourite-icon tab-active"><a href="#" id="likelink" data-videoid="' . $searchModel[0]["ID"] . '">';
+            }
+        }
+    }
+    ?>
+    <img src="<?php echo Yii::$app->getUrlManager()->getBaseUrl();?>/images/like.png" alt="<?php echo $liketextvar; ?>" />
+    <i class="displynumbr"><?php echo $searchModel[0]['LikeCount']; ?></i>
+    <span class="liketext"><?php echo $liketextvar; ?></span>
+</a></div>
+<div class="share favourite-icon">
+    <a href="#" id="sharelink" class="videosharelink" data-toggle="popover" data-videoid="<?php echo $searchModel[0]["ID"];?>">
+        <img src="<?php echo Yii::$app->getUrlManager()->getBaseUrl();?>/images/share-icon.png" alt="<?php echo Yii::t('frontend', 'sharethisvideo'); ?>" />
+        <span><?php echo Yii::t('frontend', 'sharethisvideo'); ?></span>
+    </a></div>
+<?php
+if($searchModel[0]['AllowDownload']=='1'){
+    echo '<div class="share favourite-icon">
+    <a href="'.Url::toRoute(['video/downloadvideo', 'videoid' => $searchModel[0]['ID']]).'"><img src="'.Yii::$app->getUrlManager()->getBaseUrl().'/images/download.png" alt="'.Yii::t('frontend', 'downlodthisvideo').'" /><span>'.Yii::t('frontend', 'downlodthisvideo').'</span>
+    </a></div>';
+}
+?>
+</div>
+<div class="clear"></div>
+<div class=" descraption">
+    <h1><?php echo $searchModel[0]['Title']; ?></h1>
+    <p><?php echo $searchModel[0]['description']; ?></p>
+<?php
+$publishdate = $searchModel[0]['PublishDate'];
+$publishdate1 = date('d-M-Y', strtotime($publishdate));
+$date = gmdate('d-M-Y H:i:s');
+$currentdate = date('d-M-Y', strtotime($date));
+if (strtotime($currentdate) == strtotime($publishdate1)) {
+    $datetime1 = strtotime($publishdate);
+    $datetime2 = strtotime($date);
+    $interval = abs($datetime1 - $datetime2);
+    $minutes = round($interval / 60);
+
+    $hours = floor($minutes / 60);
+    $minute = $minutes % 60;
+    if ($hours > 0) {
+        $publishdate = $hours . ' Hours and ' . $minute . ' minutes ago';
+    } else {
+        $publishdate = $minute . ' minutes ago';
+    }
+} else {
+
+    $publishdate = date('d-M-Y', strtotime($publishdate));
+}
+?>
+    <div class="col-md-6">
+        <h4><?php echo Yii::t('frontend', 'details'); ?></h4>
+        <ul>
+        <li><?php echo Yii::t('frontend', 'Released'); ?> : <?php echo $publishdate; ?></li>
+        </ul></div>
+    <div class="col-md-6">
+        <h4><?php echo Yii::t('frontend', 'Categories'); ?></h4>
+        <div><?php echo $searchModel[0]['CategName']; ?></div>
+    </div> 
+    <!--Description-->
+
+</div>
+</div>
+<?php
+//
+}
+else
+{
+   echo '<div class="error-video-msg clearfix">
+        	<div class="error-video-img"><img src="../images/video-error-img.png" alt="error-img"></div>
+        	<div class="error-video-text">
+        		<p>'.Yii::t('frontend','VideoNotAvailable').'</p>
+        	</div>
+    	</div>';
+}
+?>
+<div class="col-md-5 related-video" > 
+    <?php
+    if (!empty($RelatedVideolist)) {
+        echo '<h2>' . Yii::t('frontend', 'relatedvideos') . '</h2><div class="row">';
+        foreach ($RelatedVideolist as $RelatedVideolistsub) {
+            echo ' <!--video post-->
+                    <div class="col-sm-6 col-4 wr-video" >
+                     <div class="data">
+                    <h3><span>' . $RelatedVideolistsub['Title'] . '</span></h3></div>
+                    <div class="video-post v-col-5"> <img src="' .Main_VideoUrl(ImagesUrl($RelatedVideolistsub)). '" alt="" class="img-responsive"/>
+                    <a href="' . Url::toRoute(['video/index', 'id' => $RelatedVideolistsub['ID']]) . '"><span class="vd-button"></span></a>
+                   
+                    </div></div>
+                    <!--video post-->';
+        }
+        echo '</div>';
+    }
+    ?>
+    </div>   
+    </div>  
+<!-- Description -->
+
+<script type="text/javascript">
+    var videoCategoryName = '<?php echo (!empty($Category_Detail["CategName"])) ? $Category_Detail["CategName"] : ""; ?>';
+    if(videoCategoryName != ''){
+        ga('send', {
+          hitType: 'event',
+          eventCategory: '<?= ($Category_Detail["Type"] == 2) ? "Topics" : "Category"; ?>',
+          eventAction: videoCategoryName,
+          eventLabel : '<?= $searchModel[0]["Title"]; ?>', 
+          //eventValue : location.pathname,
+        });
+    
+    }
+</script>
+
+<?php $this->registerJs('jwplayer.key="pTuQ1K+F/Sx6c6FKjM2XOkvfdCWt8FipXj6vhQ==";', yii\web\View::POS_END); ?>

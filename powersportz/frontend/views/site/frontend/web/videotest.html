@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Video.js Player Test</title>
+  <!-- Video.js and IMA CSS -->
+  <link href="https://vjs.zencdn.net/8.6.0/video-js.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/videojs-ima@2.2.0/dist/videojs.ima.css" rel="stylesheet" />
+</head>
+<body>
+  <div style="max-width: 800px; margin: 40px auto;">
+    <h2>Test Player (Safe, Non-Live)</h2>
+    <!-- Video element -->
+    <video id="myTestPlayer" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="auto" width="800" height="450" playsinline></video>
+  </div>
+
+  <!-- Video.js and IMA Scripts -->
+  <script src="https://vjs.zencdn.net/8.6.0/video.min.js"></script>
+  <script src="https://imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/videojs-contrib-ads@7.3.2/dist/videojs.contrib.ads.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/videojs-ima@2.2.0/dist/videojs.ima.min.js"></script>
+
+  <script>
+    // Example VMAP XML with sample ads (or you can leave blank to just test HLS playback)
+    var vmapXML = '<vmap:VMAP xmlns:vmap="http://www.iab.net/videosuite/vmap" version="1.0">' +
+      '<vmap:AdBreak timeOffset="start" breakType="linear" breakId="pre">' +
+        '<vmap:AdSource id="pre-ad" allowMultipleAds="false" followRedirects="true">' +
+          '<vmap:AdTagURI templateType="vast3"><![CDATA[https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_ad_samples&sz=640x480&cust_params=sample_ct%3Dlinear&ciu_szs=300x250%2C728x90&gdfp_req=1&output=vast&unviewed_position_start=1&env=vp&impl=s&correlator=]]></vmap:AdTagURI>' +
+        '</vmap:AdSource>' +
+      '</vmap:AdBreak>' +
+    '</vmap:VMAP>';
+
+    var player = videojs("myTestPlayer", {
+      controls: true,
+      autoplay: false,
+      preload: "auto",
+      fluid: true,
+      // Replace this source with one of your actual HLS m3u8 URLs if you want to test yours
+      sources: [{
+        src: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+        type: "application/x-mpegURL"
+      }]
+    });
+
+    var imaOptions = {
+      id: "myTestPlayer",
+      adsResponse: vmapXML
+    };
+    player.ima(imaOptions);
+  </script>
+</body>
+</html>

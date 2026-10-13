@@ -1,0 +1,13 @@
+
+
+===============
+
+Result:
+ERROR: Allowed Topic ARN: arn:aws:sns:ap-northeast-1:731329424271:Transcoding_video_callback DOES NOT MATCH Calling Topic ARN: 
+
+
+Key domain:  is not equal to allowed source domain:sns:ap-northeast-1.amazonaws.com
+
+
+
+

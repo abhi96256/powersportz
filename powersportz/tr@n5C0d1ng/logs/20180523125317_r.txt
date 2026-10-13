@@ -1,0 +1,100 @@
+
+
+===============
+
+Result:
+{
+  "state" : "WARNING",
+  "version" : "2012-09-25",
+  "jobId" : "1527079887850-0ksaum",
+  "pipelineId" : "1451730880850-w9fp5d",
+  "input" : {
+    "key" : "Videos/Videos_314_120_1527079667900.mp4",
+    "frameRate" : "auto",
+    "resolution" : "auto",
+    "aspectRatio" : "auto",
+    "interlaced" : "auto",
+    "container" : "auto"
+  },
+  "inputCount" : 1,
+  "outputs" : [ {
+    "id" : "1",
+    "presetId" : "1498223079926-obqttm",
+    "key" : "Videos/Streaming/mp4_Videos_314_120_1527079667900",
+    "thumbnailPattern" : "Videos/Thumb/314/Thumb_Videos_314_120_1527079667900_{count}",
+    "rotate" : "auto",
+    "status" : "Complete",
+    "duration" : 92,
+    "width" : 1000,
+    "height" : 562
+  }, {
+    "id" : "2",
+    "presetId" : "1459860718155-f6pg97",
+    "key" : "Videos/Streaming/hls1080m_Videos_314_120_1527079667900",
+    "thumbnailPattern" : "",
+    "rotate" : "auto",
+    "segmentDuration" : 5.0,
+    "status" : "Complete",
+    "statusDetail" : "Some individual segment files for this output have a higher bit rate than the average bit rate of the transcoded media. Playlists including this output will record a higher bit rate than the rate specified by the preset.",
+    "duration" : 92,
+    "width" : 1920,
+    "height" : 1080
+  }, {
+    "id" : "3",
+    "presetId" : "1459858323913-4yaqn0",
+    "key" : "Videos/Streaming/hls720m_Videos_314_120_1527079667900",
+    "thumbnailPattern" : "",
+    "rotate" : "auto",
+    "segmentDuration" : 5.0,
+    "status" : "Complete",
+    "statusDetail" : "Some individual segment files for this output have a higher bit rate than the average bit rate of the transcoded media. Playlists including this output will record a higher bit rate than the rate specified by the preset.",
+    "duration" : 92,
+    "width" : 1280,
+    "height" : 720
+  }, {
+    "id" : "4",
+    "presetId" : "1459861212579-rp11bg",
+    "key" : "Videos/Streaming/hls480m_Videos_314_120_1527079667900",
+    "thumbnailPattern" : "",
+    "rotate" : "auto",
+    "segmentDuration" : 5.0,
+    "status" : "Complete",
+    "statusDetail" : "Some individual segment files for this output have a higher bit rate than the average bit rate of the transcoded media. Playlists including this output will record a higher bit rate than the rate specified by the preset.",
+    "duration" : 92,
+    "width" : 854,
+    "height" : 480
+  }, {
+    "id" : "5",
+    "presetId" : "1459861296780-5uv8tp",
+    "key" : "Videos/Streaming/hls360m_Videos_314_120_1527079667900",
+    "thumbnailPattern" : "",
+    "rotate" : "auto",
+    "segmentDuration" : 5.0,
+    "status" : "Complete",
+    "statusDetail" : "Some individual segment files for this output have a higher bit rate than the average bit rate of the transcoded media. Playlists including this output will record a higher bit rate than the rate specified by the preset.",
+    "duration" : 92,
+    "width" : 640,
+    "height" : 360
+  }, {
+    "id" : "6",
+    "presetId" : "1459862012890-6hoa19",
+    "key" : "Videos/Streaming/hls240m_Videos_314_120_1527079667900",
+    "thumbnailPattern" : "",
+    "rotate" : "auto",
+    "segmentDuration" : 5.0,
+    "status" : "Complete",
+    "statusDetail" : "Some individual segment files for this output have a higher bit rate than the average bit rate of the transcoded media. Playlists including this output will record a higher bit rate than the rate specified by the preset.",
+    "duration" : 92,
+    "width" : 426,
+    "height" : 240
+  } ],
+  "playlists" : [ {
+    "name" : "Videos_314_120_1527079667900",
+    "format" : "HLSv3",
+    "outputKeys" : [ "Videos/Streaming/hls1080m_Videos_314_120_1527079667900", "Videos/Streaming/hls720m_Videos_314_120_1527079667900", "Videos/Streaming/hls480m_Videos_314_120_1527079667900", "Videos/Streaming/hls360m_Videos_314_120_1527079667900", "Videos/Streaming/hls240m_Videos_314_120_1527079667900" ],
+    "status" : "Complete"
+  } ]
+}Key domain: sns.ap-northeast-1.amazonaws.com is not equal to allowed source domain:sns:ap-northeast-1.amazonaws.com
+
+
+ In notification.

@@ -1,0 +1,71 @@
+
+#<IfModule mod_setenvif.c>
+#    <IfModule mod_headers.c>
+#        <FilesMatch ".(gif|ico|jpe?g|png|svg|svgz|webp|m3u8)$">
+#            SetEnvIf Origin ":" IS_CORS
+#            Header set Access-Control-Allow-Origin "*" env=IS_CORS
+#        </FilesMatch>
+#    </IfModule>
+#</IfModule>
+
+
+#Options +Indexes
+Options -Indexes
+
+
+## EXPIRES CACHING ##
+<IfModule mod_expires.c>
+ExpiresActive On
+<FilesMatch "\.(gif|png|jpe?g|swf|css|js)$">
+    ExpiresDefault "access plus 2 weeks"
+</FilesMatch>
+
+</IfModule>
+## EXPIRES CACHING ##
+
+
+<IfModule mod_rewrite.c> 
+  RewriteEngine on
+
+  RewriteCond %{REQUEST_URI} !^public
+  RewriteCond %{REQUEST_URI} !backend
+  RewriteCond %{REQUEST_URI} !tr@n5C0d1ng
+  RewriteCond %{REQUEST_URI} !upload/xml
+  RewriteCond %{REQUEST_URI} !upload/images
+  RewriteCond %{REQUEST_URI} !sharetwitter
+  RewriteRule ^(.*)$ frontend/web/$1 [L] 
+</IfModule>
+
+#<IfModule mod_rewrite.c>
+#  RewriteEngine on
+#  RewriteCond %{REQUEST_URI} !devpowersport
+#  RewriteRule ^(.*)$ devpowersport/frontend/web/$1 [L]
+#</IfModule>
+
+
+# BEGIN GZIP
+#<ifmodule mod_deflate.c>
+#AddOutputFilterByType DEFLATE text/text text/html text/plain text/xml text/css application/x-javascript application/javascript
+#</ifmodule>
+# END GZIP
+
+# Deny accessing below extensions
+<Files ~ "(.json|.lock|.git)">
+Order allow,deny
+Deny from all
+</Files>
+
+
+#<IfModule mod_headers.c>
+#    Header set Access-Control-Allow-Origin "*"
+#    Header set Access-Control-Allow-Credentials true
+#</IfModule>
+
+Require all granted
+# Deny accessing dot files
+RewriteRule (^\.|/\.) - [F]
+#
+#AuthType Basic
+#AuthName "Restricted Content"
+#AuthUserFile /etc/apache2/.htpasswd
+#Require valid-user

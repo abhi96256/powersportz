@@ -1,0 +1,87 @@
+.twoColumnForm .form-group{
+	width: 100%;
+	display: block;
+	position: relative;
+}
+
+.twoColumnForm .form-group .control-label{
+	width: 15% !important;
+	float: left;
+	font-weight: normal !important;
+}
+
+.twoColumnForm .form-group .control-label:after {
+    content: " : ";
+    margin-right: 6px;
+}
+
+.twoColumnForm .form-group .form-control{
+	width: 25% !important;
+
+}
+
+.twoColumnForm .form-group .input-group .form-control{
+	width: 100% !important;
+
+}
+
+.twoColumnForm .form-group .extra-form-control{
+	 width: 25% !important;	
+	 margin-left: 171px;
+}
+
+div.tagsinput span.tag {
+    background: #cde69c none repeat scroll 0 0;
+    border: 1px solid #a5d24a;
+    color: #638421;
+    display: block;
+    float: left;
+    font-family: helvetica;
+    font-size: 13px;
+    margin-bottom: 5px;
+    margin-right: 5px;
+    padding: 5px;
+    text-decoration: none;
+}
+
+div.tagsinput span.tag a {
+    color: #82ad2b;
+    font-size: 11px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+#video-metakeywords_tagsinput{
+	background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
+    color: #555;
+    display: block;
+    font-size: 14px;
+    height: 34px;
+    line-height: 1.42857;
+    padding: 6px 12px;
+    width: 100% !important;
+    
+}
+#video-metakeywords_tag{
+	border: 1px solid transparent;
+}
+
+/* ****************************** Defined by Manish Kumar Singh ************************** */
+.login-page { color:#fff; padding:200px 50px; }
+#sign_in_form .form-control { height:46px !important; width:100% !important; border:1px solid rgba(255,255,255,.95) !important; border-radius:0;  }
+.login-page h1 { display:none; font-size:30px; font-weight:200; text-align:center; margin-bottom:50px; letter-spacing: 1px; }
+.login-page p { display:none; margin:0 0 20px; font-size:15px; font-weight:200; letter-spacing: 1px;}
+#sign_in_form label { font-size:15px; font-weight:200; margin-bottom:10px; letter-spacing: 1px;}
+#sign_in_form label .checkbox label { font-size:17px; font-weight:200; letter-spacing: 1px;}
+.btn-primary { background: #CC0000; font-size:14px; border: none !important; color: #fff !important; text-align: center; box-shadow:none !important; text-decoration: none; text-transform: uppercase; letter-spacing: 1px; font-weight: 500; padding:10px 25px; border-radius:0; }
+.btn-primary:hover, .btn-primary:visited { background: #d4003a; border: none !important; color: #fff; outline:none !important; }   
+.navbar-brand, .navbar-right li a { outline:none !important; }   
+/*.login { background:url("../images/login-back.jpg") center center; background-size:cover; }*/
+.login ul#w1 { display:none !important; }
+section#sign_in_form { background-color:rgba(0, 0, 0, 0.52); width: 40%; margin: 0 auto; padding: 20px 21px; } 
+
+#AdvertisementsList .table-bordered img{width: 50px !important;height: 50px;}

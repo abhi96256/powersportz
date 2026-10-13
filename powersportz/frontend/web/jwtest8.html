@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<script src="https://content.jwplatform.com/libraries/7j4f6HE0.js"></script>
+<!-- if necessary: <script>jwplayer.key="your_self-hosted_license_key";</script> -->
+</head>
+<body>
+    <b>Issue:</b> Live Video from youtube live link "https://www.youtube.com/watch?v=X7Ktabhd8a4"  is not playing in JW Player 7. It is working fine in JW Player 7 in your testing page: "https://developer.jwplayer.com/tools/stream-tester/?playerversion=7"
+    <br><br>
+    <b>Reproduction steps:</b> Open this test page url in android mobile browser, progress bar just spinning, video not playing.
+    <br><br>
+    <b>Expected behavior:</b> Live youtube video link should be play similar to your test page. You can test given youtube link in your test page.
+    <br><br>
+    <b>Actual outcome:</b> Live video link should be play like your test page with sam JW Player version 7.
+    <br><br><br>
+    <div id=player>Loading your player...</div>
+	
+	<script>
+        jwplayer('player').setup({
+		  playlist: [
+			{
+			  sources: [
+				{
+				  default: true,
+				  file: "http://bcliveuniv-lh.akamaihd.net/i/news_1@194050/master.m3u8",
+				  //file: "http://www.cbsnews.com/common/video/dai_prod.m3u8",
+				  label: "0",
+				  type: "youtube",
+				  preload: "none"
+				}
+			  ]
+			}
+		  ],
+		  primary: "html5",
+		  hlshtml: true,
+		  autostart: true
+		});
+        
+        //include any of your Javascript API calls here 
+    </script>
+	
+	<!--
+    <script>
+        jwplayer('player').setup({
+            //file: 'http://djw8d0z9052y7.cloudfront.net/Videos_16_300_test.m3u8',
+            //file: 'http://djw8d0z9052y7.cloudfront.net/Videos_16_300_test_seg5.m3u8',
+            file: 'http://djw8d0z9052y7.cloudfront.net/Videos_55_120_1498543047638.m3u8',
+            preload : 'auto',
+            androidhls: true,
+        });
+        
+        //include any of your Javascript API calls here 
+    </script>
+	-->
+</body>
+</html>

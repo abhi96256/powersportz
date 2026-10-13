@@ -1,0 +1,50 @@
+<?php
+
+use yii\helpers\Html;
+use yii\helpers\Url;
+/* @var $this yii\web\View */
+/* @var $searchModel frontend\models\PlaylistsSearch */
+/* @var $dataProvider yii\data\ActiveDataProvider */
+
+$this->title = 'Playlists';
+$this->params['breadcrumbs'][] = $this->title;
+?>
+<!--New Video-->
+<section class="color-bg wow fadeInDown" >
+    <div class="col-md-10 main_section playlist-main-sec" style="margin-top:2em;">
+        <div class="row"> 
+<?php
+$playlistvar='';
+          if(!empty($playlistdetails))
+          {
+              foreach($playlistdetails as $playlistdetailssub)
+              {
+                             
+                $playlistvar.='<div class="col-sm-3 col-4 wr-video"> <a href="'.Yii::$app->urlManager->createUrl(['playlistdetails/index','id' =>$playlistdetailssub['ID']]).'">
+                            <div class="video-post v-col-5">
+                            <div class="lest-wraper">
+                            <img src="'.S3_BUCKETABSOLUTE_PATH.'/'.PLAYLIST.'/'.$playlistdetailssub['VideoThumb'].'" alt="" class="img-responsive"/>
+                            <div class="list-veiws">
+                            <div class="paylists-total">
+                            <h3>'.$playlistdetailssub["NoOfVideos"].' Videos</h3></div></div>
+                            </div> <div class="data red-back-remove">
+                            <h3><span>'.$playlistdetailssub["Title"].'</span></h3>
+                            </div></div></a></div>'; 
+              }
+              
+          }
+          echo $playlistvar;
+?>
+            
+</div></div>
+</section>
+<!--End New Video--> 
+
+
+<script type="text/javascript">
+ga('send', {
+  hitType: 'pageview',
+  title: 'Playlist',
+  location: location.pathname,
+});
+</script>

@@ -1,0 +1,53 @@
+<?php
+
+use yii\helpers\Html;
+use yii\helpers\Url;
+/* @var $this yii\web\View */
+/* @var $searchModel frontend\models\PlaylistsSearch */
+/* @var $dataProvider yii\data\ActiveDataProvider */
+
+$this->title = 'Playlists ';
+$this->params['breadcrumbs'][] = $this->title;
+$this->registerJsFile('../js/jquery.lazy_content.js', ['depends' => [\yii\web\JqueryAsset::className()]]);
+?>
+<!--New Video-->
+<section class="color-bg wow fadeInDown" >
+    <div class="col-md-10 main_section" style="margin-top:2em;">
+        <div class="row"> 
+<?php
+$playlistvar='';
+          if(!empty($playlistdetails))
+          {
+              foreach($playlistdetails as $playlistdetailssub)
+              {
+                             
+                $playlistvar.='<div class="col-sm-3 col-4 wr-video playlist-sec"> <a href="'.Yii::$app->urlManager->createUrl(['playlistdetails/index','id' =>$playlistdetailssub['slug']]).'">
+                            <div class="video-post v-col-5">
+                            <div class="data">
+                            <h3><span>'.$playlistdetailssub["Title"].'</span></h3>
+                            </div>
+                            <div class="lest-wraper">
+                            <img src="'.S3_THUMB_CLOUDFRONT.'/'.PLAYLIST.'/'.$playlistdetailssub['VideoThumb'].'" alt="" class="img-responsive"/>
+                            <div class="list-veiws">
+                            <div class="paylists-total">
+                            <span class="no-of-video-list">'.$playlistdetailssub["NoOfVideos"].'</span>
+                            <h3>Videos</h3></div></div>
+                            </div> </div></a></div>'; 
+              }
+              
+          }
+          echo $playlistvar;
+?>
+            
+</div></div>
+</section>
+<!--End New Video--> 
+
+
+<script type="text/javascript">
+ga('send', {
+  hitType: 'pageview',
+  title: 'Playlist',
+  location: location.pathname,
+});
+</script>

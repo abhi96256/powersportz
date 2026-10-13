@@ -1,0 +1,858 @@
+<?php
+
+namespace backend\controllers;
+
+use Yii;
+use backend\models\Video;
+use backend\models\Playlist;
+use backend\models\Category;
+use backend\models\VideoSearch;
+use yii\web\Controller;
+use yii\web\NotFoundHttpException;
+use yii\filters\VerbFilter;
+use backend\models\RelatedVideos;
+use backend\models\VideoThumbnailImages;
+use Aws\S3\S3Client;
+
+ //require( 'C:/xampp/htdocs/Power_Sportz/backend/components/twitteroauth.php');
+/**
+ * VideoController implements the CRUD actions for Video model.
+ */
+class VideoController extends \backend\components\BackendController
+{
+
+    /**
+     * Lists all Video models.
+     * @return mixed
+     */
+    public function actionIndex()
+    {
+        $searchModel = new VideoSearch();
+        if (isset($_GET['VideoSearch'])) {
+            $searchModel->attributes = $_GET['VideoSearch'];
+        }
+        return $this->render('index', [
+            'model' => $searchModel,
+        ]);
+    }
+
+    public function actionSubscriberUplodedVideoIndex(){
+
+
+        $searchModel = new \backend\models\Member();
+
+       //if (isset($_GET['id'])) {
+        if (isset($_GET['Member'])) {
+            $searchModel->attributes = $_GET['Member'];
+            //$searchModel->attributes = $_GET['id'];
+        }
+        //}
+
+        return $this->render('subscriber_uploded_video_index', [
+            'model' => $searchModel,
+                        // 'dataProvider' => $dataProvider,
+        ]);
+    }
+    /**
+     * Displays a single Video model.
+     * @param integer $id
+     * @return mixed
+     */
+    public function actionView($id)
+    {
+        return $this->render('view', [
+            'model' => $this->findModel($id),
+        ]);
+    }
+
+    /**
+     * Creates a new Video model.
+     * If creation is successful, the browser will be redirected to the 'view' page.
+     * @return mixed
+     */
+    public function actionCreate()
+    {
+        $model = new Video();
+        $model->scenario = 'create';
+        $playlist = array();
+        $topics = array();
+        $talking_pointsData=[];
+        $country  = array();
+        $autherName = '';
+        if(!empty($_GET['svid'])){
+            if(($VideouplodbysubscribersModel = \backend\models\Videouploadbysubscribers::find()->with(['member.user'=>function($q){
+                return $q->select(['AES_DECRYPT(UserName,PASSWORD("'.AESKEY.'")) as UserName']);
+            }])->where(['ID'=>$_GET['svid']])->asArray()->One()) !== null){
+                $model->Title = $VideouplodbysubscribersModel['VideoTitle'];
+               // $backednPath = str_replace('backend','frontend',\Yii::$app->basePath);
+                //$path = Yii::getAlias('@web').'/web/uploads/'.$VideouplodbysubscribersModel['VideoFile'];
+
+                $model->VideoURL  = S3_SUBSCRIBER_VIDEO_BUCKETABSOLUTE_PATH.$VideouplodbysubscribersModel['VideoFile'];
+                //$model->VideoURL  = "https://testvideoin.s3.amazonaws.com/Videos/Videos_31_1446726923657.mp4";
+                $model->CreatedBy = $VideouplodbysubscribersModel['member']['user']['UserName'];
+                if(isset($VideouplodbysubscribersModel['member']['FirstName']) && isset($VideouplodbysubscribersModel['member']['LastName']))
+                    $autherName = $VideouplodbysubscribersModel['member']['FirstName'].' '.$VideouplodbysubscribersModel['member']['LastName'];
+            }
+        }
+        
+        //Get all video list
+        $modelVideoList = new \backend\models\Images();
+        // $VideosList = $modelVideoList->find()->where("IsThumb = 1 && ImageType = 1")->all();
+        $VideosList = [];
+        $VideoImageList = [];
+
+        //Get video thumbnail image list
+        // $sql =  'CALL Admin_Thumbnail_List("",""," Updated DESC,Created DESC ","")'; 
+        // $command = Yii::$app->db->createCommand($sql);
+        // $VideoImageList = $command->queryAll();
+        $isShowStatus = true;
+        if(($member = \backend\models\Member::find()->where('parent_role_user_id != "" && UserID = "'.YIi::$app->user->id.'"')->asArray()->One()) !== null){
+            $model->Status = 4;
+            $isShowStatus = false;
+        }
+
+        
+
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            return $this->redirect(['index']);
+        } else {
+            return $this->render('create', [
+                'model' => $model,
+                'playlistData'=>$playlist,
+                'topicsData'=>$topics,
+                'talking_pointsData'=>$talking_pointsData,
+                'countryData'=>$country,
+                'videosList'=>$VideosList,
+                'isShowStatus'=>$isShowStatus,
+                'VideoThumbImageList'=>$VideoImageList,
+                'autherName'=>$autherName
+            ]);
+        }
+    }
+
+    /**
+     * Updates an existing Video model.
+     * If update is successful, the browser will be redirected to the 'view' page.
+     * @param integer $id
+     * @return mixed
+     */
+    public function actionUpdate($id)
+    {
+        $autherName = '';
+        $model = \backend\models\Video::find()->with(['userName'])->where(['id'=>$id])->One();
+        //$model = $this->findModel($id);
+        $model->scenario  = 'update';
+        //$model->PublishDate = date("m-d-Y h:i A");
+        $model->PublishDate = ConvertDateTolocaltime($model->PublishDate);
+
+        $modelImages = new \backend\models\Images();
+        $images = $modelImages->findAll(array('VideoID'=>$id));
+        $smallImage = '';
+        if(isset($images[0]->ImageName) && $images[0]->ImageName!='')
+            $smallImage = $images[0]->ImageName;
+        
+        $modelPlaylist = new \backend\models\Playlistvideo();
+        $playlistData = $modelPlaylist->findAll(array('VideoID'=>$id));
+
+        $modelTopics = new \backend\models\Videocategory();
+        $topicsData = $modelTopics->findAll(array('VideoID'=>$id));
+        $talkingPoints = new \backend\models\Videocategory();
+        $talking_pointsData = $talkingPoints->find()->joinWith('categ')->where(array('VideoID'=>$id,'category.Type'=>3))->All();
+
+        $modelCountry = new \backend\models\Videogeographic();
+        $countryData = $modelCountry->findAll(array('VideoID'=>$id));
+
+        //set the time difference becase rajinder requesed
+        /*
+        AND
+         (
+            DATE(Created) > DATE_SUB(CURDATE(),INTERVAL 1 MONTH) 
+            OR
+            DATE(Updated) > DATE_SUB(CURDATE(),INTERVAL 1 MONTH)
+        )
+        */
+        
+        // [isRelatedVideo] => 
+        // [IsRelatedVideoId] => 
+        // [IsthumbnailVideoId] => 
+        //Get all default thumbnail images 
+        $modelVideoList = new \backend\models\Images();
+        $DefaultGeneratedImages = $modelVideoList->find()->where("ImageType = 1 && VideoID = '".$id."'")->asArray()->all();
+
+        $modelthumbimagesVideos = VideoThumbnailImages::find()->select("GROUP_CONCAT(images_id) as concat_images_id")->where(["video_id"=>$id,"type"=>'1'])->One();
+        $model->IsthumbnailVideoId = $modelthumbimagesVideos->concat_images_id;
+
+        $modelDefaultThumbimagesVideos = VideoThumbnailImages::find()->select("GROUP_CONCAT(images_id) as concat_images_id")->where(["video_id"=>$id,"type"=>'0'])->One();
+        $model->IsDefaultthumbnailVideoId = $modelDefaultThumbimagesVideos->concat_images_id;
+
+        $modelrelatedVideos = RelatedVideos::find()->select("GROUP_CONCAT(related_video) as concat_related_video")->where(["video_id"=>$id])->One();
+        $model->IsRelatedVideoId = $modelrelatedVideos->concat_related_video;
+
+        $playlist = array();
+        $topics = array();
+        $country  = array();
+        $talking=[];
+        $VideoImageList=[];
+        //Get video thumbnail image list
+        //$sql =  'CALL Admin_Thumbnail_List ("","","","")';
+        if(!empty($model->IsthumbnailVideoId)){   
+            $sql = "SELECT img.ImageID,img.ImageType,img.VideoID,img.Title,img.ImageName from images as img  WHERE 1 and img.ImageType=3 and ImageID in ($model->IsthumbnailVideoId)";
+            $command = Yii::$app->db->createCommand($sql);
+            $VideoImageList = $command->queryAll();
+        }
+
+        $isShowStatus = true;
+        if( Yii::$app->user->identity->UserType != 1){
+            if(($member = \backend\models\Member::find()->where("UserID = '".$model->CreatedBy."'  && parent_role_user_id != '".Yii::$app->user->id."'")->asArray()->One()) !== null ){
+               $isShowStatus = false;
+           }
+       }
+
+       foreach($playlistData as $key => $value) {
+        $playlist[] = $value->PlayListID;
+    }
+    foreach($topicsData as $key => $value) {
+        $topics[] = $value->CategID;
+    }
+    foreach($countryData as $key => $value) {
+        $country[] = $value->CountryID;
+    }
+    foreach ($talking_pointsData as $key => $value) {
+     $talking[] =  $value->CategID;
+ }
+ if ($model->load(Yii::$app->request->post()) && $model->save()) {
+    return $this->redirect(['view', 'id' => $model->ID]);
+} 
+$_videoIDs =array_merge([$model->FullVideoId],explode(',',$model->IsRelatedVideoId));
+$_videoIDs = trim(implode(',',$_videoIDs),',');
+$VideosList=[];
+if(!empty($_videoIDs)){
+    // $modelVideoList = new \backend\models\Images();
+    // $VideosList = $modelVideoList->find()->with(['video'])->where("VideoID Not IN($id) && IsThumb = 1 && ImageType = 1 && VideoID in ($_videoIDs) and Status = '1' ")->orderBy(['Updated'=> 'DESC' ,'Created'=> 'DESC'] )->all();
+    $sql = "SELECT im.*,v.Title FROM `images` as im join video as v on v.ID =im.VideoID WHERE im.IsThumb = 1 && im.ImageType = 1 &&  v.Status='1' and VideoID Not IN($id)  && VideoID in ($_videoIDs)   group by v.ID  ORDER BY v.Updated desc, v.Created desc";  
+    $command = Yii::$app->db->createCommand($sql);
+    $VideosList = $command->queryAll();
+
+}
+        // changed by Hiren dave on 23-06-2017 to append m3u8 on url [Shailesh has suggested]
+if(!empty($model->VideoStreamURL))
+    $model->VideoStreamURL = $model->VideoStreamURL.'.m3u8';
+return $this->render('update', [
+    'model' => $model,
+    'playlistData'=>$playlist,
+    'topicsData'=>$topics,
+    'talking_pointsData'=>$talking,
+    'countryData'=>$country,
+    'videosList'=>$VideosList,
+    'images'=>$images,
+    'isShowStatus'=>$isShowStatus,
+    'VideoThumbImageList'=>$VideoImageList,
+    'DefaultGeneratedImages'=>$DefaultGeneratedImages,
+    'autherName'=>$autherName
+]);
+
+}
+
+public function actionCreateajax()
+{
+
+    $model = new Video();
+    $model->scenario  = 'create';
+   
+    if ($model->load(Yii::$app->request->post())) {
+           // $backednPath = str_replace('backend','frontend',\Yii::$app->basePath);
+           // echo $backednPath.'/web/uploads/'.$model->VideoURL;die;
+            //Video::upload_image(base64_encode(file_get_contents($backednPath.'/web/uploads/'.$model->VideoURL)));
+
+        if($model->validate()) {    
+            $model->CreatedBy = Yii::$app->user->identity->UserID;
+            $model->slug = \backend\models\Video::createSlug($model->Title);
+            $playlist = array();
+            $topics = array();
+            $category = array();
+            $country = array();
+            $talking_points = array();
+            if(isset($_POST['Video']['Playlist'])) {
+                $playlist = $_POST['Video']['Playlist'];
+            }    
+            if(isset($_POST['Video']['Topics'])) {
+                $topics = $_POST['Video']['Topics'];
+            }    
+            if(isset($_POST['Video']['Category'])) {
+                $category = $_POST['Video']['Category'];
+            }    
+            if(isset($_POST['Video']['CountryRestrictions'])) {
+                $country = $_POST['Video']['CountryRestrictions'];
+            }
+            if(isset($_POST['Video']['talking_points'])) {
+                $talking_points = $_POST['Video']['talking_points'];
+            }  
+                //$model->PublishDate = date("Y-m-d H:i:s",strtotime($_POST['Video']['PublishDate']));
+            $model->PublishDate = ConvertDateToUTC(date("Y-m-d H:i:s",strtotime($_POST['Video']['PublishDate'])));
+            $model->save();
+            $videoID = Yii::$app->db->getLastInsertID();
+
+            $videoData = Video::findOne(['ID' => $videoID]);
+
+            $skipTimeString = $model->skip_adv_time;
+            
+            $videoData->PreXML = '';
+            $videoData->MidXML = '';
+            $videoData->PostXML = '';
+            for ($i = 0; $i < 3; $i++) {
+                $URL ='';
+                $fileName = "myStaticTag_" . $videoID . "_" . $i;
+                if ($i == 0 && !empty($model->PreAdvertisementTagURL)) {
+                    $URL = $model->PreAdvertisementTagURL;
+                    $videoData->PreXML = $fileName;
+                } else if ($i == 1 && !empty($model->MidAdvertisementTagURL)) {
+                    $URL = $model->MidAdvertisementTagURL;
+                    $videoData->MidXML = $fileName;
+                } else if(!empty($model->PostAdvertisementTagURL)){
+                    $URL = $model->PostAdvertisementTagURL;
+                    $videoData->PostXML = $fileName;
+                }
+                if(!empty($URL)){ 
+                    $xml = '<VAST version="2.0">
+                    <Ad id="static">
+                    <InLine>
+                    <AdSystem>Static VAST Template</AdSystem>
+                    <AdTitle>Static VAST Tag</AdTitle>
+                    <Creatives>
+                    <Creative>
+                    <Linear skipoffset="00:00:03">
+                    <Duration>00:00:08</Duration>
+                    <VideoClicks>
+                    <ClickThrough>http://www.jwplayer.com/</ClickThrough>
+                    </VideoClicks>
+                    <MediaFiles>
+                    <MediaFile type="video/mp4" bitrate="300" width="480" height="270">
+                    ' . $URL . '
+                    </MediaFile>
+                    </MediaFiles>
+                    </Linear>
+                    </Creative>
+                    </Creatives>
+                    </InLine>
+                    </Ad>
+                    </VAST>';
+                    $xmlobj = new \SimpleXMLElement($xml);
+
+                    //$path =Yii::$app->getUrlManager()->getBaseUrl()."/upload/xml/";
+                    //echo $path;
+                    $xmlobj->asXML('upload/xml/' . $fileName . '.xml');
+                    \S3::putObjectFile('upload/xml/' . $fileName . '.xml', S3BUCKET, BUCKET_FOLDER . '/' .'xml/' . $fileName . '.xml', \S3::ACL_PUBLIC_READ);
+                }
+
+                    // chmod ('upload/xml/'.$fileName.'.xml',0777);
+            }
+
+            $videoData->save();
+            for($n=0;$n<count($playlist);$n++) {
+                $modelPlaylist = new \backend\models\Playlistvideo();
+                    //$modelPlay = new \backend\models\Videocategory();
+                $PlayListindex = $modelPlaylist->find()->where(['PlayListID' => $playlist[$n]])->max('DisplayIndex');;
+                    //$index = $catData;
+
+                if($PlayListindex > 0){ $PlayListindex++; }else{ $PlayListindex = 1;}
+                $modelPlaylist->PlayListID = $playlist[$n];
+                $modelPlaylist->VideoID = $videoID;
+                $modelPlaylist->DisplayIndex = $PlayListindex;
+                $modelPlaylist->CreatedBy = Yii::$app->user->identity->UserID;
+                $modelPlaylist->save();
+            }
+            for($n=0;$n<count($topics);$n++) {
+                $modelTopics = new \backend\models\Videocategory();
+                $modelTopics = new \backend\models\Videocategory();
+                $TopicsData = $modelTopics->find()->where(['CategID' => $topics[$n]])->max('Displayindex');;
+                $Topicindex = $TopicsData;
+                    //echo $index;die;
+                if($Topicindex > 0){ $Topicindex++; }else{ $Topicindex = 1;}
+                $modelTopics->CategID = $topics[$n];
+                $modelTopics->VideoID = $videoID;
+                $modelTopics->DisplayIndex = $Topicindex;
+                $modelTopics->CreatedBy = Yii::$app->user->identity->UserID;
+                $modelTopics->save();
+            }
+
+            for($n=0;$n<count($talking_points);$n++) { 
+                $modeltalking_points = new \backend\models\Videocategory();
+                $talking_pointsData = $modelTopics->find()->where(['CategID' => $talking_points[$n]])->max('Displayindex');;
+                $talking_pointsindex = $talking_pointsData;
+                    //echo $index;die;
+                if($talking_pointsindex > 0){ $talking_pointsindex++; }else{ $talking_pointsindex = 1;}
+                $modeltalking_points->CategID = $talking_points[$n];
+                $modeltalking_points->VideoID = $videoID;
+                $modeltalking_points->DisplayIndex = $talking_pointsindex;
+                $modeltalking_points->CreatedBy = Yii::$app->user->identity->UserID;
+                $modeltalking_points->save();
+            }
+
+            for($n=0;$n<count($category);$n++) {
+                $modelcat = new \backend\models\Videocategory();
+                $catData = $modelcat->find()->where(['CategID' => $category[$n]])->max('Displayindex');;
+                $index = $catData;
+                    //echo $index;die;
+                if($index > 0){ $index++; }else{ $index = 1;}
+                $modelCategory = new \backend\models\Videocategory();
+                $modelCategory->CategID = $category[$n];
+                $modelCategory->VideoID = $videoID;
+                $modelCategory->DisplayIndex = $index;
+                $modelCategory->CreatedBy = Yii::$app->user->identity->UserID;
+                $modelCategory->save();
+            }
+            for($n=0;$n<count($country);$n++) {
+                $modelCountry = new \backend\models\Videogeographic();
+                $modelCountry->CountryID = $country[$n];
+                $modelCountry->VideoID = $videoID;
+                $modelCountry->CreatedBy = Yii::$app->user->identity->UserID;
+                $modelCountry->save();
+            }
+            if(isset($_POST['languageFields'])){
+                $_POST['languageFields']['from_table_id'] = $model->ID;
+                \backend\models\LangaugeFields::SaveLanguageFields($_POST['languageFields']);
+            }
+            $sql =  'CALL AdminVideoPlaylistAddOrUpdate(:VideoID,:playlistID,NULL,NULL,NULL)';
+            $command = Yii::$app->db->createCommand($sql);
+            $command->bindParam(":VideoID",$videoID);
+            $command->bindParam(":playlistID",(!empty($playlist)) ? implode(",", $playlist) : NULL);
+            $command->execute();
+
+
+            $sql =  'CALL RelatedVideosAddOrUpdate(:videoID,:relatedVideoId,NULL,NULL,NULL)';
+            $command = Yii::$app->db->createCommand($sql);
+            $command->bindParam(":videoID",$videoID);
+            $command->bindParam(":relatedVideoId",(!empty($_POST['Video']['IsRelatedVideoId'])) ? trim($_POST['Video']['IsRelatedVideoId']) : NULL);
+            $command->execute();
+
+            $sql =  'CALL VideosThumbImagesAddOrUpdate(:VideoID,:thumbVideoId,1,NULL,NULL,NULL)';
+            $command = Yii::$app->db->createCommand($sql);
+            $command->bindParam(":VideoID",$videoID);
+            $command->bindParam(":thumbVideoId",(!empty($_POST['Video']['IsthumbnailVideoId'])) ? $_POST['Video']['IsthumbnailVideoId'] : NULL);
+            $command->execute();
+
+            $sql =  'CALL VideosThumbImagesAddOrUpdate(:VideoID,:DefaultThumbVideoId,0,NULL,NULL,NULL)';
+            $command = Yii::$app->db->createCommand($sql);
+            $command->bindParam(":VideoID",$videoID);
+            $command->bindParam(":DefaultThumbVideoId",(!empty($_POST['Video']['IsDefaultthumbnailVideoId'])) ? $_POST['Video']['IsDefaultthumbnailVideoId'] : NULL);
+            $command->execute();
+
+
+            if(!empty($_REQUEST['SVID'])){
+                $Subscribermodel = \backend\models\Videouploadbysubscribers::find()->where(['ID'=>$_REQUEST['SVID']])->One();
+                $Subscribermodel->VideoID = $model->ID;
+                $Subscribermodel->ApproveStatus = "2";
+                $Subscribermodel->save(false);
+            }
+
+                /*$sql =  'CALL RelatedVideosAddOrUpdate (:videoID,:relatedVideoId,"","","")';
+                $command = Yii::$app->db->createCommand($sql);
+                $command->bindParam(":videoID", $videoID);
+                $command->bindParam(":relatedVideoId", (!empty($_POST['Video']['IsRelatedVideoId'])) ? trim($_POST['Video']['IsRelatedVideoId']) : NULL);
+                $command->queryAll();
+
+                $sql =  'CALL VideosThumbImagesAddOrUpdate(:VideoID,:thumbVideoId,NULL,NULL,NULL)';
+                $command = Yii::$app->db->createCommand($sql);
+                $command->bindParam(":VideoID",trim($id));
+                $command->bindParam(":thumbVideoId",(!empty($_POST['Video']['IsthumbnailVideoId'])) ? trim($_POST['Video']['IsthumbnailVideoId']) : NULL);
+                $command->execute();*/
+                
+                if(!$model->isNewRecord && $model->VideoStreamURL == ''){
+                    Yii::$app->session->setFlash('success', 'Video has been uploded successfully');
+                }else{
+                    Yii::$app->session->setFlash('success', 'Video has been added successfully');
+                }
+                //echo json_encode(array("status"=>"ok","id"=>$videoID,'VideoURL'=>$model->VideoStreamURL,'thumbimage'=>S3_VIDEO_BUCKETABSOLUTE_PATH.$model->generateThumbnailImage->ImageName,'videoTitle'=>$model->Title,'shared_on_browser'=>$model->shared_on)); die;
+                echo json_encode(array("status"=>"ok","UplodedVideoUrl"=>$model->VideoURL,"thumb_sec"=>$model->GeneratedThumbnailTime,"id"=>$videoID,'videoDesc'=>(isset($model->Description)) ? $model->Description :"",'VideoURL'=>(isset($model->ID)) ?  Yii::$app->urlManagerFrontEnd->createAbsoluteUrl(['video/index','id'=>$model->ID]) : "",'thumbimage'=>(isset($model->generateThumbnailImage->ImageName)) ? S3_VIDEO_BUCKETABSOLUTE_PATH.$model->generateThumbnailImage->ImageName: "",'videoTitle'=>(isset($model->Title)) ? $model->Title :"",'shared_on_browser'=>(isset($model->shared_on)) ? $model->shared_on : "")); die;
+            } else {
+                echo json_encode(array("status"=>"error")); die;
+            }
+        }
+    }    
+    
+    public function actionUpdateajax() {
+        $id = $_POST['id'];
+        $model = $this->findModel($id);
+        $model->scenario = 'update';
+        $exists_sharedon = empty($model->shared_on) ? [] : explode(",", $model->shared_on) ;
+        if ($model->load(Yii::$app->request->post())) {
+            if($model->validate()) {
+                $model->slug = \backend\models\Video::createSlug($model->Title);
+                 //Xml Code Goes Here
+                $skipTimeString = $model->skip_adv_time;
+                $model->PreXML = '';
+                $model->MidXML = '';
+                $model->PostXML = '';
+                
+                for ($i = 0; $i < 3; $i++) {
+                   $URL='';
+                   $fileName = "myStaticTag_" . $model->ID . "_" . $i;
+                   if ($i == 0 && !empty($model->PreAdvertisementTagURL)) {
+
+                    $URL = $model->PreAdvertisementTagURL;
+                    $model->PreXML = $fileName;
+                } else if ($i == 1 && !empty($model->MidAdvertisementTagURL)) {
+                    $URL = $model->MidAdvertisementTagURL;
+                    $model->MidXML = $fileName;
+                } else if(!empty($model->PostAdvertisementTagURL)){
+                    $URL = $model->PostAdvertisementTagURL;
+                    $model->PostXML = $fileName;
+                }
+                if(!empty($URL)){
+                    $xml = '<VAST version="2.0">
+                    <Ad id="static">
+                    <InLine>
+                    <AdSystem>Static VAST Template</AdSystem>
+                    <AdTitle>Static VAST Tag</AdTitle>
+                    <Creatives>
+                    <Creative>
+                    <Linear skipoffset="' . $skipTimeString . '">
+                    <Duration>00:00:08</Duration>
+                    <VideoClicks>
+                    <ClickThrough>http://www.jwplayer.com/</ClickThrough>
+                    </VideoClicks>
+                    <MediaFiles>
+                    <MediaFile type="video/mp4" bitrate="300" width="480" height="270">
+                    ' . $URL . '
+                    </MediaFile>
+                    </MediaFiles>
+                    </Linear>
+                    </Creative>
+                    </Creatives>
+                    </InLine>
+                    </Ad>
+                    </VAST>';
+                    $xmlobj = new \SimpleXMLElement($xml);
+
+                    //$path =Yii::$app->getUrlManager()->getBaseUrl()."/upload/xml/";
+                    //echo $path;
+                    $xmlobj->asXML('upload/xml/' . $fileName . '.xml');
+                    \S3::putObjectFile('upload/xml/' . $fileName . '.xml', S3BUCKET, BUCKET_FOLDER . '/' .'xml/' . $fileName . '.xml', \S3::ACL_PUBLIC_READ);
+                    // chmod ('upload/xml/'.$fileName.'.xml',0777);
+                }
+            }
+
+            $model->Updated = date("Y-m-d H:i:s");
+            $model->UpdatedBy = Yii::$app->user->identity->UserID;
+            $playlist = array();
+            $topics = array();
+            $category = array();
+            $country = array();
+            $talking_points=[];
+            if(isset($_POST['Video']['Playlist'])) {
+                $playlist = $_POST['Video']['Playlist'];
+                if(in_array("multiselect-all",$playlist)){
+                       // echo "hiii";
+                    unset($playlist[array_search("multiselect-all",$playlist)]);
+                }
+            }
+            if(isset($_POST['Video']['Topics'])) {
+                $topics = $_POST['Video']['Topics'];
+            }    
+            if(isset($_POST['Video']['talking_points'])) {
+                $talking_points = $_POST['Video']['talking_points'];
+            } 
+            if(isset($_POST['Video']['Category'])) {
+                $category = $_POST['Video']['Category'];
+            }    
+            if(isset($_POST['Video']['CountryRestrictions'])) {
+                $country = $_POST['Video']['CountryRestrictions'];
+            }    
+            $model->PublishDate = ConvertDateToUTC(date("Y-m-d H:i:s",strtotime($_POST['Video']['PublishDate'])));
+            $model->shared_on = empty($model->shared_on) ? [] : $model->shared_on;
+                //$model->shared_on = implode(",",array_unique(array_merge($exists_sharedon,$model->shared_on)));
+            $model->shared_on = implode(",",$model->shared_on);
+            $model->save();
+                /*$modelPlaylist = new \backend\models\Playlistvideo();
+                $modelPlaylist->deleteAll(array('VideoID'=>$id));
+                for($n=0;$n<count($playlist);$n++) {
+                    $modelPlaylist = new \backend\models\Playlistvideo();
+                    $modelPlaylist->PlayListID = $playlist[$n];
+                    $modelPlaylist->VideoID = $id;
+                    $modelPlaylist->CreatedBy = Yii::$app->user->identity->UserID;
+                    $modelPlaylist->save();
+                }*/
+
+                if(isset($_POST['languageFields'])){
+                    $_POST['languageFields']['from_table_id'] = $model->ID;
+                    \backend\models\LangaugeFields::SaveLanguageFields($_POST['languageFields']);
+                }
+
+                $modelTopics = new \backend\models\Videocategory();
+                
+                $DisplayIndexTopics = \backend\models\Videocategory::find()->where(['CategID' => $topics,'VideoID' =>$id])->asArray()->all();
+                
+                $DisplayIndexCat = \backend\models\Videocategory::find()->where(['CategID' => $category,'VideoID' =>$id])->asArray()->all();
+                //var_dump($DisplayIndexCat);die;  
+                $modelTopics->deleteAll(array('VideoID'=>$id));
+                for($n=0;$n<count($topics);$n++) {
+                    $modelTopics = new \backend\models\Videocategory();
+                    $modelTopics->CategID = $topics[$n];
+                    $modelTopics->VideoID = $id;
+                    if(count($DisplayIndexTopics) > 0 && $n<count($DisplayIndexTopics)){
+                        $modelTopics->DisplayIndex = $DisplayIndexTopics[$n]['DisplayIndex'];
+                    }
+                    else
+                    {
+                        $catData = $modelTopics->find()->where(['CategID' => $topics[$n]])->max('Displayindex');;
+                        $topicIndex = $catData;
+                        if($topicIndex > 0){ $topicIndex++; }else{ $topicIndex = 1;}
+                        $modelTopics->DisplayIndex = $topicIndex;
+                    }$modelTopics->CreatedBy = Yii::$app->user->identity->UserID;
+                    $modelTopics->save();
+                }
+                for($n=0;$n<count($talking_points);$n++) { 
+                    $modeltalking_points = new \backend\models\Videocategory();
+                    $talking_pointsData = $modelTopics->find()->where(['CategID' => $talking_points[$n]])->max('Displayindex');;
+                    $talking_pointsindex = $talking_pointsData;
+                    //echo $index;die;
+                    if($talking_pointsindex > 0){ $talking_pointsindex++; }else{ $talking_pointsindex = 1;}
+                    $modeltalking_points->CategID = $talking_points[$n];
+                    $modeltalking_points->VideoID = $id;
+                    $modeltalking_points->DisplayIndex = $talking_pointsindex;
+                    $modeltalking_points->CreatedBy = Yii::$app->user->identity->UserID;
+                    $modeltalking_points->save();
+                }
+
+                for($n=0;$n<count($category);$n++) {
+                    $modelCategory = new \backend\models\Videocategory();
+                    $modelCategory->CategID = $category[$n];
+                    $modelCategory->VideoID = $id;
+                    if(count($DisplayIndexCat) > 0 && $n<count($DisplayIndexCat)){
+                        $modelCategory->DisplayIndex = $DisplayIndexCat[$n]['DisplayIndex'];
+                    }
+                    else
+                    {
+                        $catData = $modelCategory->find()->where(['CategID' => $category[$n]])->max('Displayindex');;
+                        $index = $catData;
+                        if($index > 0){ $index++; }else{ $index = 1;}
+                        $modelCategory->DisplayIndex = $index;
+                    }
+                    $modelCategory->CreatedBy = Yii::$app->user->identity->UserID;
+                    $modelCategory->save();
+                }
+
+                $PlaylistModel= new \backend\models\Playlistvideo();
+                $DisplayIndexPlaylist = \backend\models\Playlistvideo::find()->where(['PlayListID' => $playlist,'VideoID' =>$id])->asArray()->all();
+
+                $modelCountry = new \backend\models\Videogeographic();
+                $modelCountry->deleteAll(array('VideoID'=>$id));
+                for($n=0;$n<count($country);$n++) {
+                    $modelCountry = new \backend\models\Videogeographic();
+                    $modelCountry->CountryID = $country[$n];
+                    $modelCountry->VideoID = $id;
+                    $modelCountry->CreatedBy = Yii::$app->user->identity->UserID;
+                    $modelCountry->save();
+                }
+
+                $sql =  'CALL AdminVideoPlaylistAddOrUpdate(:VideoID,:playlistID,NULL,NULL,NULL)';
+                $command = Yii::$app->db->createCommand($sql);
+                $command->bindParam(":VideoID",$id);
+                $command->bindParam(":playlistID",(!empty($playlist)) ? implode(",", $playlist) : NULL);
+                $command->execute();
+
+
+                
+                $sql =  'CALL RelatedVideosAddOrUpdate(:videoID,:relatedVideoId,NULL,NULL,NULL)';
+                $command = Yii::$app->db->createCommand($sql);
+                $command->bindParam(":videoID",$id);
+                $command->bindParam(":relatedVideoId",(!empty($_POST['Video']['IsRelatedVideoId'])) ? trim($_POST['Video']['IsRelatedVideoId']) : NULL);
+                $command->execute();
+                
+                $PlaylistModel= new \backend\models\Playlistvideo();
+                //$DisplayIndexPlaylist = \backend\models\Playlistvideo::find()->where(['PlayListID' => $playlist,'VideoID' =>$id])->asArray()->all();
+                
+                $PlaylistModel->deleteAll(array('VideoID'=>$id));
+                // var_dump($DisplayIndexPlaylist);die;
+                for($n=0;$n<count($playlist);$n++) {
+                    $modelPlaylist = new \backend\models\Playlistvideo();
+                    $modelPlaylist->PlayListID = $playlist[$n];
+                    $modelPlaylist->VideoID = $id;
+                    $modelPlaylist->CreatedBy = Yii::$app->user->identity->UserID;
+
+                    if(count($DisplayIndexPlaylist) > 0 && $n<count($DisplayIndexPlaylist)){
+
+                        $modelPlaylist->DisplayIndex = $DisplayIndexPlaylist[$n]['DisplayIndex'];
+                    }
+                    else
+                    {
+                       $playlistData = $PlaylistModel->find()->where(['PlayListID' => $playlist[$n]])->max('DisplayIndex');
+                       $playlistIndex = $playlistData;
+                       if($playlistIndex > 0){ $playlistIndex++; }else{ $playlistIndex = 1;}
+                       $modelPlaylist->DisplayIndex = $playlistIndex;
+                   }
+
+                   $modelPlaylist->save();
+               }
+
+               $sql =  'CALL VideosThumbImagesAddOrUpdate(:VideoID,:thumbVideoId,1,NULL,NULL,NULL)';
+               $command = Yii::$app->db->createCommand($sql);
+               $command->bindParam(":VideoID",$id);
+               $command->bindParam(":thumbVideoId",(!empty($_POST['Video']['IsthumbnailVideoId'])) ? $_POST['Video']['IsthumbnailVideoId'] : NULL);
+               $command->execute();
+
+
+               $sql =  'CALL VideosThumbImagesAddOrUpdate(:VideoID,:DefaultThumbVideoId,0,NULL,NULL,NULL)';
+               $command = Yii::$app->db->createCommand($sql);
+               $command->bindParam(":VideoID",$id);
+               $command->bindParam(":DefaultThumbVideoId",(!empty($_POST['Video']['IsDefaultthumbnailVideoId'])) ? $_POST['Video']['IsDefaultthumbnailVideoId'] : NULL);
+               $command->execute();
+               if(!$model->isNewRecord && $model->VideoStreamURL == ''){
+                Yii::$app->session->setFlash('success', 'Video has been uploded successfully');
+            }else{
+                Yii::$app->session->setFlash('success', 'Video has been updated successfully');
+            }
+                //http://52.91.4.216/powersport/frontend/web/index.php/video?id=52
+                //echo json_encode(array("status"=>"ok","id"=>$id,'VideoURL'=>$model->VideoStreamURL,'thumbimage'=>S3_VIDEO_BUCKETABSOLUTE_PATH.$model->generateThumbnailImage->ImageName,'videoTitle'=>$model->Title,'shared_on_browser'=>$model->shared_on)); die;
+            echo json_encode(array("status"=>"ok","id"=>$id,"thumb_sec"=>$model->GeneratedThumbnailTime,'videoDesc'=>(isset($model->Description)) ? $model->Description :"",'VideoURL'=>(isset($model->ID)) ?  Yii::$app->urlManagerFrontEnd->createAbsoluteUrl(['video/index','id'=>$model->ID]) : "",'thumbimage'=>(isset($model->generateThumbnailImage->ImageName)) ? S3_VIDEO_BUCKETABSOLUTE_PATH.$model->generateThumbnailImage->ImageName: "",'videoTitle'=>(isset($model->Title)) ? $model->Title :"",'shared_on_browser'=>(isset($model->shared_on)) ? $model->shared_on : "")); die;
+        } else {
+            echo json_encode($model->geterrors()); die;
+               // echo json_encode(array("status"=>"error")); die;
+        }
+    } 
+}
+
+public function actionUpdatevideo() {
+    $videoID = $_POST['id'];
+    $modelUpdate = Video::findOne($videoID);
+    if(isset($_POST['fullvideofile']) && $_POST['fullvideofile']!='') {
+        $modelUpdate->FullVideoURL = $_POST['fullvideofile'];
+    }
+    if(isset($_POST['filename']) && $_POST['filename']!='') { 
+        $modelUpdate->VideoURL = $_POST['filename'];
+    }
+    $modelUpdate->save(); 
+    echo json_encode(array("status"=>"ok")); die;
+}
+
+public function actionlogintwitter(){
+      /* $connection = new TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET);
+       $request_token = $connection->getRequestToken(OAUTH_CALLBACK);
+       $_SESSION['oauth_token'] = $token = $request_token['oauth_token'];
+       $_SESSION['oauth_token_secret'] = $request_token['oauth_token_secret'];
+       switch ($connection->http_code) {
+          case 200:
+                $url = $connection->getAuthorizeURL($token);
+                header('Location: ' . $url); 
+            break;
+            default:
+                echo "Notlogin";
+                unset($_SESSION['oauth_token']);
+                unset($_SESSION['oauth_token_secret']);
+            break;
+            }
+            exit;*/
+
+
+   /* if (empty($_SESSION['access_token']) || empty($_SESSION['access_token']['oauth_token']) || empty($_SESSION['access_token']['oauth_token_secret'])) {
+        echo "No";
+    }
+    else
+    {   
+        echo "Yes";
+    }*/
+
+    $twitter = Yii::$app->twitter->getTwitter();
+    $request_token = $twitter->getRequestToken();
+
+    //set some session info
+    Yii::$app->session['oauth_token'] = $token = $request_token['oauth_token'];
+    Yii::$app->session['oauth_token_secret'] = $request_token['oauth_token_secret'];
+
+    if ($twitter->http_code == 200){
+        //get twitter connect url
+        $url = $twitter->getAuthorizeURL($token);
+        //send them
+        return $this->redirect($url);
+    } else {
+        //error here
+        return $this->redirect(Url::home());
+    }
+}
+public function actionUpdateVideoStatus(){
+    $videoID = $_POST['video_id'];
+    $status = $_POST['status'];
+    $modelUpdate = Video::findOne($videoID);
+    $modelUpdate->Status = $status;
+    $modelUpdate->save(false);
+    echo "success";
+}
+    /**
+     * Deletes an existing Video model.
+     * If deletion is successful, the browser will be redirected to the 'index' page.
+     * @param integer $id
+     * @return mixed
+     */
+    public function actionDelete($id)
+    {   
+        $model = $this->findModel($id);
+        $model->Status = 3;
+        $model->save(false);
+        Yii::$app->session->setFlash('success', 'Video has been deleted successfully!');
+        return $this->redirect(['index']);
+    }
+
+    /**
+     * Finds the Video model based on its primary key value.
+     * If the model is not found, a 404 HTTP exception will be thrown.
+     * @param integer $id
+     * @return Video the loaded model
+     * @throws NotFoundHttpException if the model cannot be found
+     */
+    protected function findModel($id)
+    {
+        if (($model = Video::findOne($id)) !== null) {
+            return $model;
+        } else {
+            throw new NotFoundHttpException('The requested page does not exist.');
+        }
+    }
+
+    /** 
+     * Your controller action to fetch the list
+     */
+    public function actionThumbImageList($q = null) {
+        $q= urldecode($q);
+        //Get video thumbnail image list
+        $sql =  'SELECT img.ImageID,img.ImageType,img.VideoID,img.Title,
+        img.ImageName,img.MetaKeywords 
+        FROM images AS img  
+        WHERE  img.ImageType=3 AND img.MetaKeywords like "%'.$q.'%"'; 
+        $command = Yii::$app->db->createCommand($sql);
+        $VideoImageList = $command->queryAll();
+        foreach( $VideoImageList  as $k =>  $value) {
+            $Keywords =[];
+            foreach (explode(',',$value['MetaKeywords']) as $key => $Keyword) {
+               if (strpos(strtoupper($Keyword), strtoupper($q)) !== false) {
+                $Keywords[] =$Keyword;
+            }
+        }
+        $VideoImageList[$k]['MetaKeywords'] = implode(', ',$Keywords);
+    }
+
+    echo \yii\helpers\Json::encode($VideoImageList);
+}
+public function actionVideoThumbList($q = null,$id=null) {
+    $q= urldecode($q);
+    $sqlId= '';
+    if(!empty($id)){
+        $sqlId = " && im.VideoID Not IN($id) ";
+    }
+    $sql = 'SELECT im.*,v.Title,v.MetaKeywords  FROM `images` as im join video as v on v.ID =im.VideoID WHERE im.IsThumb = 1 && im.ImageType = 1 &&  v.Status="1"  and v.MetaKeywords  like "%'.$q.'%"   '.$sqlId.' group by v.ID  ORDER BY v.Updated desc, v.Created desc';  
+    $command = Yii::$app->db->createCommand($sql);
+    $VideosList = $command->queryAll();
+    foreach( $VideosList  as $k =>  $value) {
+        $Keywords =[];
+        foreach (explode(',',$value['MetaKeywords']) as $key => $Keyword) {
+         if (strpos(strtoupper($Keyword), strtoupper($q)) !== false) {
+            $Keywords[] =$Keyword;
+        }
+    }
+    $VideosList[$k]['MetaKeywords'] = implode(', ',$Keywords);
+}
+
+echo \yii\helpers\Json::encode($VideosList);
+}
+
+}
+

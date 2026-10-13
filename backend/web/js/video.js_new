@@ -1,0 +1,318 @@
+/******************* PublishVideo Process ***************************/
+
+$("#video-videourl").change(function(){
+  $("#uploadvideo").html("Upload");
+});
+
+/************************  Generated Thumbnail images *****************************/
+$(".defaultthumbnailVideoPopup").click(function(){
+   /* if($('#defaultvideoThumbnailImage_input').val() != ''){
+      $('#defaultvideoThumbnailImage_input').val('');
+      filterPopup($('#defaultvideoThumbnailImage_input'));
+    } */
+    setCheckedValue($("#DefaultVideoThumbnailImageModel input[name='videothumbimages']"),$("#video-isdefaultthumbnailvideoid").val());
+  $('#DefaultVideoThumbnailImageModel').modal('show');
+});
+
+//When user click on add video then open popup
+$(".addgeneratedthumbimages").click(function(){
+    var error = "Select at least one video";
+    ThumbcheckedVideo = $("#DefaultVideoThumbnailImageModel input[name='videothumbimages']:checked");
+    console.log($("#DefaultVideoThumbnailImageModel input[name='videothumbimages']:checked"));
+    //Store video id in form
+    if(RequiredValidation(ThumbcheckedVideo,error,"DefaultVideoThumbnailImageModel")){
+        $("#video-isdefaultthumbnailvideoid").val(getCheckedValue(ThumbcheckedVideo));
+        $('#DefaultVideoThumbnailImageModel').modal('hide');
+        $(".count_default_thumbnail_images").html($(ThumbcheckedVideo).length + " thumbmail selected.")
+    }
+});
+
+/**********************************  Stop ************************************/
+
+
+
+/*************************** Related video ************************************/
+//When user click on related video then open pop up
+$(".relatedVideosPopup").click(function(){
+    if($('#related_videos_input').val() != ''){
+        $('#related_videos_input').val('');
+        filterPopup($('#related_videos_input')); 
+    }
+    setCheckedValue($("#RelatedVideoModel input[name='videothumb']"),$("#video-isrelatedvideoid").val());
+    $('#RelatedVideoModel').modal('show');
+});
+
+//When user click on add video then open popup
+$(".addrelatedvideo").click(function(){
+    var error = "Select at least one video";
+    checkedVideo = $("#RelatedVideoModel input[name='videothumb']:checked");
+    //Store video id in form
+    if(RequiredValidation(checkedVideo,error,"RelatedVideoModel")){
+        $("#video-isrelatedvideoid").val(getCheckedValue(checkedVideo));
+        $('#RelatedVideoModel').modal('hide');
+        $(".count_related_video").html($(checkedVideo).length + " Related Videos Selected.")
+    }
+});
+
+/*************************** Thumbnail video ************************************/
+
+$(".thumbnailVideoPopup").click(function(){
+    if($('#videoThumbnailImage_input').val() != ''){
+      $('#videoThumbnailImage_input').val('');
+      filterPopup($('#videoThumbnailImage_input'));
+    } 
+    setCheckedValue($("#VideoThumbnailImageModel input[name='videothumbimages']"),$("#video-isthumbnailvideoid").val());
+	$('#VideoThumbnailImageModel').modal('show');
+});
+
+//When user click on add video then open popup
+$(".addthumbimages").click(function(){
+    var error = "Select at least one video";
+    ThumbcheckedVideo = $("#VideoThumbnailImageModel input[name='videothumbimages']:checked");
+    //Store video id in form
+    if(RequiredValidation(ThumbcheckedVideo,error,"VideoThumbnailImageModel")){
+        $("#video-isthumbnailvideoid").val(getCheckedValue(ThumbcheckedVideo));
+        $('#VideoThumbnailImageModel').modal('hide');
+        $(".count_thumbnail_images").html($(ThumbcheckedVideo).length + " thumbmail selected.")
+    }
+});
+
+/*************************** Full video ************************************/
+
+$(".full_video_popup").click(function(){
+    if($('#full_video_input').val() != ''){
+        $('#full_video_input').val('');
+        filterPopup($('#full_video_input'));
+    } 
+    setCheckedValue($("#FullVideoModel input[name='fullvideo']"),$("#video-fullvideoid").val());
+    $('#FullVideoModel').modal('show');
+});
+
+//When user click on add video then open popup
+$(".addfullvideo").click(function(){
+    var error = "Select at least one video";
+    ThumbcheckedVideo = $("#FullVideoModel input[name='fullvideo']:checked");
+    //Store video id in form
+//    if(RequiredValidation(ThumbcheckedVideo,error)){
+    if($(ThumbcheckedVideo).length > 0){
+       $("#video-fullvideoid").val(getCheckedValue(ThumbcheckedVideo));
+       $(".full_video_name").html( "<b>"+$(ThumbcheckedVideo).next('img').next('p').html() + "</b> Video selected.")
+    }
+       $('#FullVideoModel').modal('hide');
+  //  }
+});
+
+
+ $("#video-is_skip_adv").click(function() {
+    if($("#video-is_skip_adv").is(":checked")) {
+        $("#showSkipTime").show();
+    } else {
+        $("#showSkipTime").hide();
+    }    
+});
+
+var clientId = '10412981768-7q9q88kkdmm1b529mg9aktk7gb1nhe22.apps.googleusercontent.com';
+// Enter the API key from the Google Develoepr Console - to handle any unauthenticated
+// requests in the code.
+// The provided key works for this sample only when run from
+// https://google-api-javascript-client.googlecode.com/hg/samples/authSample.html
+// To use in your own application, replace this API key with your own.
+var apiKey = 'AIzaSyBgMwxzKI70CM5wb2772vtxW6TKC0N_pNg';
+// To enter one or more authentication scopes, refer to the documentation for the API.
+var scopes = 'https://www.googleapis.com/auth/plus.me';
+
+
+
+function handleClientLoad() {
+  console.log("load");
+   gapi.client.setApiKey(apiKey);
+}
+
+
+function getProcess(id,status){
+    $.ajax({
+            type: "POST",
+            url: "update-video-status",
+            data: {"video_id":id,"status":status},
+            success: function (r) {
+               window.location.reload();
+             },
+      });
+}
+
+
+$.oauthpopup = function(options)
+{
+    options.windowName = options.windowName ||  'ConnectWithOAuth'; // should not include space for IE
+    options.windowOptions = options.windowOptions || 'location=0,status=0,width=800,height=400';
+    options.callback = options.callback || function(){ window.location.reload(); };
+    var that = this;
+    console.log(options.path);
+    that._oauthWindow = window.open(options.path, options.windowName, options.windowOptions);
+    that._oauthInterval = window.setInterval(function(){
+        if (that._oauthWindow.closed) {
+            window.clearInterval(that._oauthInterval);
+            options.callback();
+        }
+    }, 1000);
+};
+
+
+var TwitterConnect = (function() {
+
+  // constructor accepts a url which should be your Twitter OAuth url
+  function TwitterConnect(url) {
+    this.url = url;
+  }
+
+  console.log("twitter connected");
+  TwitterConnect.prototype.exec = function() {
+    var self = this,
+      params = 'location=0,status=0,width=800,height=600';
+
+    this.twitter_window = window.open(this.url, 'twitterWindow', params);
+
+    this.interval = window.setInterval((function() {
+      if (self.twitter_window.closed) {
+        window.clearInterval(self.interval);
+        self.finish();
+      }
+    }), 1000);
+
+    // the server will use this cookie to determine if the Twitter redirection
+    // url should window.close() or not
+    document.cookie = 'twitter_oauth_popup=1; path=/';
+  }
+
+  TwitterConnect.prototype.finish = function() {
+    $.ajax({
+      type: 'get',
+      url: '',
+      dataType: 'json',
+      success: function(response) {
+        if (response.authed) {
+          // the user authed on Twitter, so do something here
+        } else {
+          // the user probably just closed the window
+        }
+      }
+    });
+  };
+
+  return TwitterConnect;
+})();
+
+$(".shared_video").click(function(){
+    $this = $(this);
+   // alert($(this).is(':checked'));
+    // alert($(this).val());
+    if($(this).is(':checked')){
+      if($(this).val() == 0){
+        console.log("fb");
+          FB.getLoginStatus(function(response) {
+            console.log(response);
+          if (response.status === 'connected') {
+               console.log('Logged in.');
+          }
+          else {
+                FB.login(function(response){
+                    if(response.authResponse == null){
+                        $($this).removeAttr('checked');
+                    }
+                }, {scope: 'publish_actions'});
+          }
+        });
+      }else if($(this).val() == 3){
+        console.log("Google+");
+        gapi.auth.authorize({client_id: clientId, scope: scopes, immediate: false},  function (authResult) {
+          if (authResult && !authResult.error) {
+              console.log("login !!!");
+           } else {
+              $($this).removeAttr('checked');
+          }
+      });
+      }else if($(this).val() == 1){
+        console.log("Linkedin");
+        IN.UI.Authorize().place()
+        IN.Event.on(IN, "auth", function(){ });
+      }else if($(this).val() == 2){
+        $($this).removeAttr('checked');
+       /* console.log("Twitter");
+        var twitter_connect = new TwitterConnect('https://api.twitter.com/oauth/authorize?oauth_token=4417738454-xrS1tIg6u8CxhyqiP7QnRHBigPIHbSrLAMbErtN');
+        twitter_connect.exec();*/
+//        twitter_btn.on('click', function(e) {
+  //        e.preventDefault();
+//          twitter_connect.exec();
+    //    });
+        // TwitterConnect();
+        twitterOauthPopup();
+        /*$.oauthpopup({
+              path: "https://api.twitter.com/oauth/authorize?oauth_token=Z6eEdO8MOmk394WozF5oKyuAv855l4Mlqo7hhlSLik",
+              callback: function(ev)
+              {
+                  console.log(ev);
+                  //do callback stuff
+              }
+          });*/
+       /* $.oauthpopup({
+            path: website_url+'video/logintwitter',
+            success : function(){
+              
+            }
+        });*/
+    /* twttr.events.bind(
+        'click',
+        function (ev) {
+          console.log(ev);
+        }
+      );*/
+      }else if($(this).val() == 3){
+          gapi.auth.authorize({client_id: clientId, scope: scopes, immediate: true}, 
+              function(authresult){
+                if (authResult && !authResult.error) {
+                   console.log("login !!!");
+                    } else {
+                    console.log("Not login");
+                  }
+              });
+      }else if($(this).val() == 4){
+          console.log("Pintrest");
+          PDK.login({scope : 'read_public, write_public'}, function(session) {
+            if (!session) {
+              alert('The user chose not to grant permissions or closed the pop-up');
+            } else {
+              console.log('Thanks for authenticating. Getting your information...');
+              PDK.me(function(response) {
+                if (!response || response.error) {
+                  alert('Oops, there was a problem getting your information');
+                } else {
+                  console.log('Welcome,  ' + response.data.first_name + '!');
+                }
+              });
+            }
+        });
+      }
+   }
+});
+
+/************************** Subscriber Uploded Video *****************************/
+/**
+* When admin can reject any video then call this funciton.
+*/
+function getReject(id,memberid) {
+  //alert("hiii");
+     $("#spinnerLoader").show();
+      var videoid = id;
+      var mid = memberid;
+      var datastring  = 'SID='+videoid+'&MemberID='+mid;
+        $.ajax({
+               type : 'POST',
+               url  :  '../member/uploadvideoreject',
+               data : datastring,
+                success : function(msg) {
+                      
+                            location.reload();
+                            $("#spinnerLoader").hide();
+                           }
+          });
+   }

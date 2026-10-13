@@ -1,0 +1,58 @@
+<?php
+
+namespace backend\models;
+use yii\data\SpDataProvider;
+
+use Yii;
+
+/**
+ * This is the model class for table "schedule".
+ *
+ * @property integer $ScheduleID
+ * @property integer $VideoID
+ * @property string $ProgramTitle
+ * @property string $ScheduleDate
+ * @property string $ScheduleTime
+ * @property string $Status
+ */
+class Schedule extends \yii\db\ActiveRecord
+{
+    /**
+     * @inheritdoc
+     */
+    public static function tableName()
+    {
+        return 'schedule';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function rules()
+    {
+        return [
+            [['VideoID'], 'integer'],
+          //  [['ScheduleDate', 'ScheduleTime'], 'safe'],
+            [['ScheduleDate'], 'required','on'=>'create'],
+             [['ProgramTitle', 'ScheduleTime'], 'required'],
+         
+           // [['Status'], 'string'],
+            [['ProgramTitle'], 'string', 'max' => 250]
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function attributeLabels()
+    {
+        return [
+            'ScheduleID' => 'Schedule ID',
+            'VideoID' => 'Video ID',
+            'ProgramTitle' => 'Program Title',
+            'ScheduleDate' => '',
+            'ScheduleTime' => 'Schedule Time',
+            'Status' => 'Status',
+        ];
+    }
+}

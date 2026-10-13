@@ -1,0 +1,47 @@
+{
+  "mycars": [{
+	"name": "Model Y",
+	"tagline": "Starting at $69,420",
+	"image": "{uri:('https://www.powersportz.tv/backend/web/apiimg/ModelY.jpeg')}"
+}, {
+	"name": "Model S",
+	"tagline": "Order Online for",
+	"taglineCTA": "Touchless Delivery",
+	"image": "{uri:('https://www.powersportz.tv/backend/web/apiimg/ModelS.jpeg')}"
+}, {
+	"name": "Model 3",
+	"tagline": "Order Online for",
+	"taglineCTA": "Touchless Delivery",
+	"image": "{uri:('https://www.powersportz.tv/backend/web/apiimg/Model3.jpeg')}"
+}, {
+	"name": "Model X",
+	"tagline": "Order Online for",
+	"taglineCTA": "Touchless Delivery",
+	"image": "{uri:('https://www.powersportz.tv/backend/web/apiimg/ModelX.jpeg')}"
+}, {
+	"name": "Ferrari X",
+	"tagline": "Order Online for",
+	"taglineCTA": "Touchless Delivery",
+	"image": "{uri:('https://www.powersportz.tv/backend/web/apiimg/wp5031863.jpg')}"
+}, {
+	"name": "Uncontroll Sigma",
+	"tagline": "Order Online for",
+	"taglineCTA": "Touchless Delivery",
+	"image": "{uri:('https://www.powersportz.tv/backend/web/apiimg/wp5031854.jpg')}"
+}, {
+	"name": "Incredible",
+	"tagline": "Order Online for",
+	"taglineCTA": "Touchless Delivery",
+	"image": "{uri:('https://www.powersportz.tv/backend/web/apiimg/wp503191818.jpg')}"
+}, {
+	"name": "Captiva FX",
+	"tagline": "Order Online for",
+	"taglineCTA": "Touchless Delivery",
+	"image": "{uri:('https://www.powersportz.tv/backend/web/apiimg/wp4402943.jpg')}"
+}, {
+	"name": "hustle",
+	"tagline": "Order Online for",
+	"taglineCTA": "Touchless Delivery",
+	"image": "{uri:('https://www.powersportz.tv/backend/web/apiimg/wp2194526.jpg')}"
+}]
+}

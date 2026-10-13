@@ -1,0 +1,124 @@
+<?php
+
+namespace backend\models;
+
+use Yii;
+use yii\helpers\ArrayHelper;
+
+/**
+ * This is the model class for table "langauge".
+ *
+ * @property integer $ID
+ * @property string $Langauge
+ * @property integer $DisplayIndex
+ * @property string $Status
+ * @property integer $CreatedBy
+ * @property integer $UpdatedBy
+ * @property string $Created
+ * @property string $Updated
+ */
+class Langauge extends \yii\db\ActiveRecord
+{
+    /**
+     * @inheritdoc
+     */
+    public static function tableName()
+    {
+        return 'langauge';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function rules()
+    {
+        return [
+            [['DisplayIndex', 'CreatedBy', 'UpdatedBy'], 'integer'],
+            [['Status'], 'string'],
+            [['Created', 'Updated'], 'safe'],
+            [['Langauge'], 'string', 'max' => 512]
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function attributeLabels()
+    {
+        return [
+            'ID' => 'ID',
+            'Langauge' => 'Langauge',
+            'DisplayIndex' => 'Display Index',
+            'Status' => 'Status',
+            'CreatedBy' => 'Created By',
+            'UpdatedBy' => 'Updated By',
+            'Created' => 'Created',
+            'Updated' => 'Updated',
+        ];
+    }
+    
+    public function getLanguageList() {
+        $languageData = Langauge::find()->where(['status'=>'1'])->select('LanguageID, Language')->all();
+        $listData=ArrayHelper::map($languageData,'LanguageID','Language');
+        return $listData;
+    }
+    public function getActiveLanguageList() {
+        $languageData = Langauge::find()->select('LangCode, Language')->where('Status=:status', [':status'=>'1'])->all();
+        $listData=ArrayHelper::map($languageData,'LangCode','Language');
+        return $listData;
+    }
+        public static function getLanguageId($lang_code) {
+    return $languageData = Langauge::find()->select('LanguageID')->where('LangCode=:langcode', [':langcode'=>$lang_code])->asArray()->one();
+        
+    }
+    /**
+    * This funciton used to get all language fields 
+    *  $request = [
+    *        "field_name"=>['Title','Description'],
+    *       "from_table_name"=>'video',
+    *        "from_table_id"=>"1",
+    *   ];
+    *   
+    **/
+    public static function getLanguageFields($request = false){
+        //Get all language without english from langauge table
+        $languageData = Langauge::find()->select('LanguageID, Language')->where('Status=:status && LanguageID != 1', [':status'=>'1'])->all();
+        //set language array
+        $listData =ArrayHelper::map($languageData,'LanguageID','Language');
+        
+        /** start : set condition array for get language fields as per assigned table **/
+        $condition['from_table_name'] =  $request['from_table_name'];
+        $condition['from_table_id'] =  $request['from_table_id'];
+        if(!empty( $request['field_name'])){
+            $condition['field_name'] =  $request['field_name'];
+        }
+        if(!empty($listData)){
+            $condition['lang_id'] =  array_keys($listData);   
+        }
+        /** stop : set condition array for get language fields as per assigned table  **/
+       /** Get all langauge translation fields with language from langaugefields table*/
+       $AllLanguageFields =  LangaugeFields::find()->where($condition)->asArray()->all();
+       $tempfields = array();
+       array_walk($AllLanguageFields, function($key) use(&$tempfields){
+            $tempfields[$key['lang_id']][$key['field_name']] = $key;
+            return $tempfields;
+       });
+       /** Get all langauge translation fields with language */
+      /** set return array */ 
+       $returnArr = [];
+       foreach ($listData as $key => $value) {
+            $fields_array = [];
+             foreach ($request['field_name'] as $name) {
+                 $fields_array[$name]['value'] = (!empty($tempfields[$key][$name]['value'])) ? $tempfields[$key][$name]['value'] : ""; 
+                 $fields_array[$name]['id'] = (!empty($tempfields[$key][$name]['id'])) ? $tempfields[$key][$name]['id'] : "";
+             }
+            $returnArr[$value] = ['lang_id'=>$key,
+                            'Language' =>$value,
+                            'fields'=> $fields_array,
+                             "from_table_name"=>$request['from_table_name'],
+                             "from_table_id"=>$request["from_table_id"],
+                            ];
+       }
+      return $returnArr;
+    }
+}

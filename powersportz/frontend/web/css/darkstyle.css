@@ -1,0 +1,129 @@
+/*------------------------------------------------------------------
+[Table of contents]
+
+1. Common Styles for Fark
+		--body
+		
+		
+-----*/		
+ .dark{
+	background:url('bg.jpg');
+	color:#fff;
+}
+ .dark .primary-menu ul li a{
+	color:#fff;
+}
+.ddsmoothmenu ul li.parent-active  li.parent-active.active  a{background:#000000!important; color:#fff!important;}
+
+ .dark .hd-aside-search{
+	max-width:11px;
+	cursor:pointer;
+	overflow:hidden;
+	color:transparent;
+	min-height:11px;
+	background:url(../images/aside-search.png);
+	background-repeat:no-repeat;
+}
+.header-search button{display:none;}
+
+.dark .header-info{
+	background:url('bg.jpg');
+}
+.dark .header-info p{
+	color:#333333;
+}
+
+.dark .header-info p a{
+	color:#333333;
+}
+.dark .header-info p a:hover{
+	color:#fff;
+}
+.dark .header-info p a:hover :before{
+color:#333333;
+}
+
+.dark .info-select select{
+	border:1px solid #474747;
+	background-color:#000000;
+	}
+	.dark .sbHolder{
+  border: 1px solid #474747;
+  background-color: #50545D ;
+  }
+
+.dark #footer{
+	background-color:#000000;
+	border-top:1px solid #141414;
+}
+.dark .footer-widget-area{
+	border-top:1px solid #141414;
+	border-bottom:1px solid #141414;
+	margin-top:70px;
+
+}
+
+.dark .footer-widget-area .title-block{
+	color:#666666;
+}
+
+.dark .footer-widget-area ul li a{
+	color:#fff;
+}
+.dark .footer-widget-area ul li a:hover{
+	color: #ff3300;
+}
+.dark .footer-copyright p{
+	color:#474747;
+}
+
+.dark .video-post-info p{
+	color:#333333;
+}
+
+.dark .spo-comment .bd h4{color:#333333;
+text-transform:uppercase;
+font-size: 16px;
+font-weight: 700;
+float:left;
+padding-top: 0px;
+margin-top: 0px;}
+
+.dark .spo-comments-list li{border-bottom:1px solid #141414;}
+.dark .spo-comment-reply input{background-color:#333333; }
+.dark .spo-comment-reply textarea{background-color:#333333; }
+.dark .comment-button {background-color:#333333; background-image:url(../images/send.png);
+background-repeat: no-repeat;
+background-position: 50% 50%; }
+
+.dark header{background: #245188;}
+
+.dark .home-v2-content{border-top:1px solid #141414;
+}
+
+
+.dark .sbSelector, .dark  .sbSelector:link, .dark  .sbSelector:visited, .dark  .sbSelector:hover {
+  color: #fff;
+  outline: none;
+  text-decoration: none;
+  line-height: 29px;
+  padding: 0px 0px 0px 14px;
+  left: 58px;
+  }
+  
+ .dark .sbOptions {
+   border: 1px solid #474747;
+  background-color: #000000;
+  }
+  
+  .dark .sbOptions a:link, .dark .sbOptions a:visited {
+  color: #fff;
+  text-decoration: none;
+}
+
+.ddsmoothmenu ul li ul li a{
+padding:10px 3px;
+}
+.ddsmoothmenu ul li ul li a:hover{background:#000000; text-decoration:none;}
+
+a{color:#fff;}

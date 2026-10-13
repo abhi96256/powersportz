@@ -1,0 +1,432 @@
+s<?php
+
+/* @var $this \yii\web\View */
+/* @var $content string */
+use backend\assets\AppAsset;
+use yii\helpers\Html;
+use yii\bootstrap\Nav;
+use yii\bootstrap\NavBar;
+use yii\widgets\Breadcrumbs;
+use common\widgets\Alert;
+use kartik\spinner\Spinner;
+use yii\helpers\Url;
+
+AppAsset::register($this);
+$session = Yii::$app->session;
+$userType = $session->get('userType');
+?>
+<?php $this->beginPage() ?>
+<!DOCTYPE html>
+<html lang="<?= Yii::$app->language ?>">
+<head>
+    <meta charset="<?= Yii::$app->charset ?>">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <?= Html::csrfMetaTags() ?>
+    <title><?= Html::encode($this->title) ?></title>
+    <?php $this->head() ?>
+<style>
+#spinnerLoader {
+    background: rgba(3, 0, 0, 0.48) none repeat scroll 0 0;
+    cursor: pointer;
+    display: block;
+    height: 100%;
+    left: 0;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 9;
+}
+#spinnerLoaderForPopup {
+    background: rgba(3, 0, 0, 0.48) none repeat scroll 0 0;
+    cursor: pointer;
+    display: block;
+    height: 100%;
+    left: 0;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 9;
+}
+</style>
+</head>
+<body>
+<?php $this->beginBody() ?>
+
+<div class="wrap">
+    <?php
+    NavBar::begin([
+        'brandLabel' => 'Power Sportz',
+        'brandUrl' => Yii::$app->homeUrl,
+        'options' => [
+            'class' => 'navbar-inverse navbar-fixed-top',
+        ],
+    ]);
+
+    /*if (Yii::$app->user->isGuest) {
+        $menuItems[] = ['label' => 'Login', 'url' => ['/site/login']];
+    } else {
+        $menuItems = [
+            ['label' => 'Home', 'url' => ['/homepage/update']],
+        ];
+        
+         
+        $menuItems[] = [
+            'label' => 'Thumbnail',
+            'url' => ['/images/index'],
+            'active'=>Yii::$app->controller->id == 'image',
+        ];
+       
+         $menuItems[] = [
+            'label' => 'Video',
+            'items' =>  [
+                            ['label' => 'Video', 'url' => ['/video/index'],'active'=>Yii::$app->controller->id == 'video'],
+                            ['label' => 'Schedule', 'url' =>['/schedule/index'],'active'=>Yii::$app->controller->id == 'schedule'],
+                            ['label' => 'Playlist', 'url' =>['/playlist/index'],'active'=>Yii::$app->controller->id == 'playlist'],
+                            ['label' => 'Category', 'url' =>['/category/index'],'active'=>Yii::$app->controller->id == 'category'],
+                            ['label' => 'Action', 'url' =>['/topics/index'],'active'=>Yii::$app->controller->id == 'topics'],
+                        ],
+        ];
+        
+        $menuItems[] = [
+            'label' => 'Contents',
+            'items' => [
+                    ['label' => 'Breaking News', 'url' => ['/breakingnews/index'],'active'=>Yii::$app->controller->id == 'breakingnews'],
+                    ['label' => 'Advertisement', 'url' =>['/advertisements/index'],'active'=>Yii::$app->controller->id == 'advertisements'],
+                    ['label' => 'Custom Advertisement', 'url' =>['/customadvertisement/index'],'active'=>Yii::$app->controller->id == 'customadvertisement'],
+                    ['label' => 'GameRules', 'url' =>['/gamerule/index'],'active'=>Yii::$app->controller->id == 'gamerule'],
+                    ],
+        ];
+       
+        $menuItems[] = [
+            'label' => 'Subscriber',
+            'url' => ['/member/index'],
+            'active'=>Yii::$app->controller->id == 'member',
+        ];
+         
+        $menuItems[] = [
+            'label' => 'Staff Role',
+            'url' => ['/user-role/index'],
+        ];
+        $menuItems[] = [
+            'label' => 'Staff User',
+            'url' => ['/staff/index'],
+            'active'=>Yii::$app->controller->id == 'staff'
+        ];
+        $menuItems[] = [
+            'label' => 'Admin User',
+            'url' => ['/user/index'],
+            'active'=>Yii::$app->controller->id == 'user',
+        ];
+        $menuItems[] = [
+            'label' => 'Logout (' . Yii::$app->user->identity->UserName . ')',
+            'url' => ['/site/logout'],
+            'linkOptions' => ['data-method' => 'post']
+        ];       
+    }*/
+    $menuItems = backend\models\Homepage::SetRoleBasedHeaderMenu();
+    echo Nav::widget([
+        'options' => ['class' => 'navbar-nav navbar-right'],
+        'items' => $menuItems,
+    ]);
+    NavBar::end();
+    ?>
+
+    <div class="container">
+        <?php /*echo Breadcrumbs::widget([
+            'links' => isset($this->params['breadcrumbs']) ? $this->params['breadcrumbs'] : [],
+        ]);*/ ?>
+        <?= Alert::widget() ?>
+        <?= $content ?>
+    </div>
+</div>
+<div id="spinnerLoader" style="display:none;">
+<?php echo Spinner::widget([
+                'preset' => Spinner::LARGE,
+                'color' => 'blue',
+                'align' => 'center'
+        ]);
+?>
+</div>    
+    
+<footer class="footer">
+    <div class="container">
+        <p class="pull-left">&copy; Power Sportz <?= date('Y') ?></p>
+    </div>
+</footer>    
+<?php $this->endBody() 
+?>
+<script>    
+$('.alert').delay(2000).slideUp();
+$(document).on('pjax:send', function() {
+    $("#spinnerLoader").show();
+})    
+$(document).on('pjax:complete', function() {
+    $("#spinnerLoader").hide();
+});
+$("#w0").on("afterValidate", function (event, messages) {
+    //setTimeout(function(){showloader();}, 200);
+    $("#spinnerLoader").show();
+});
+
+function showloader() {
+    var errorSummary = $(".error-summary ul").html();
+    if(errorSummary == '') {
+        $("#spinnerLoader").show();  
+    }    
+}
+
+ 
+
+  //gapi.client.setApiKey(apiKey);
+
+$("#video-post-form").on('beforeSubmit', function (e) {
+            var shortVideo = $("#video-videourl").val();
+            var fullVideo = $("#video-fullvideourl").val();
+            $("#spinnerLoader").show();
+            var updatedID = '<?php if(isset($_GET['id']) && $_GET['id']!='') { echo $_GET['id']; } ?>';
+            if(shortVideo == '' && updatedID == '') {
+                alert('Please upload video');
+                return false;
+            }
+            if(updatedID == '')  { 
+                    var URL  = '<?php echo Url::toRoute('video/createajax'); ?>';
+                    var datastring = $("#video-post-form").serialize();
+            } else {         
+                    var URL  = '<?php echo Url::toRoute('video/updateajax'); ?>';
+                    var datastring = $("#video-post-form").serialize();
+                    datastring+='&id='+updatedID;
+            }
+            $.ajax({
+                        type : 'POST',
+                        url : URL,
+                        data : datastring,
+                        dataType: 'json',
+                        async: false, 
+                        success : function(msg) {
+                            if(msg.status == 'ok') {
+                                var bucket = new AWS.S3({params: {Bucket: '<?php echo S3BUCKET; ?>'}});
+                                var fileChooser = document.getElementById('video-videourl');
+                                var file = fileChooser.files[0];
+                                if(file) {
+                                        /**** Short video ******/
+                                        var updatedFile = fileChooser.files[0]['name'];
+                                        var extension = updatedFile.split('.').pop();
+                                        var updatedFileString = $.now()+'.'+extension;
+                                        var finalImageName = msg.id+'_'+updatedFileString;
+                                        var renameFile = '<?php echo VIDEOS ?>/<?php echo VIDEOS ?>_'+finalImageName;
+                                    
+                                        $("#progressForShortVideo").show();    
+                                        var params = {Key: renameFile, ContentType: file.type, Body: file};
+                                        bucket.upload(params).on('httpUploadProgress', function(evt) {
+                                        var percentage = parseInt((evt.loaded * 100) / evt.total);
+                                        $("#progress-barForShortVideo")
+                                            .css("width", percentage + "%")
+                                            .attr("aria-valuenow", percentage)
+                                            .text(percentage + "%");
+                                        }).send(function(err, data) {
+                                            
+                                            $.ajax({
+                                                type : 'POST',
+                                                url : '<?php echo Url::toRoute('video/updatevideo'); ?>',
+                                                data : 'id='+msg.id+'&filename='+renameFile,
+                                                dataType: 'json',
+                                                async: false, 
+                                                success : function(msgOfFile) {
+                                                    if(msgOfFile.status == 'ok') {
+                                                        document.location.href='<?php echo Url::toRoute('video/index'); ?>';
+                                                    }    
+                                                }    
+                                            });
+
+
+                                        }); 
+                                        
+
+                                        /**** Full video ******/
+                                        
+                                        /*var bucket = new AWS.S3({params: {Bucket: '<?php echo S3BUCKET; ?>'}});
+                                        var fileChooser = document.getElementById('video-fullvideourl');
+                                        var file = fileChooser.files[0];
+                                        if(file) {
+                                        var updatedFile = fileChooser.files[0]['name'];
+                                        var extension = updatedFile.split('.').pop();
+                                        var updatedFileString = $.now()+'.'+extension;
+                                        var finalImageName = msg.id+'_'+updatedFileString;
+                                        var renameFullFile = '<?php echo FULLVIDEOS; ?>/<?php echo FULLVIDEOS; ?>_'+finalImageName;
+                                        $("#progressForFullVideo").show();    
+                                            
+                                            var params = {Key: renameFullFile, ContentType: file.type, Body: file};
+                                            bucket.upload(params).on('httpUploadProgress', function(evt) {
+                                            var percentage = parseInt((evt.loaded * 100) / evt.total);
+                                            
+                                            $("#progress-barForFullVideo")
+                                                .css("width", percentage + "%")
+                                                .attr("aria-valuenow", percentage)
+                                                .text(percentage + "%");
+                                            }).send(function(err, data) {
+                                                $.ajax({
+                                                    type : 'POST',
+                                                    url : '<?php echo Url::toRoute('video/updatevideo'); ?>',
+                                                    data : 'id='+msg.id+'&fullvideofile='+renameFullFile,
+                                                    dataType: 'json',
+                                                    async: false, 
+                                                    success : function(msgOfFile) {
+                                                        if(msgOfFile.status == 'ok') {
+                                                            document.location.href='<?php echo Url::toRoute('video/index'); ?>';
+                                                        }    
+                                                    }    
+                                                });
+                                            }); */
+                                           /* document.location.href='<?php echo Url::toRoute('video/index'); ?>';
+                                        } else {
+                                            document.location.href='<?php echo Url::toRoute('video/index'); ?>';
+                                        }*/
+
+                                } else {       
+                                       /* var bucket = new AWS.S3({params: {Bucket: '<?php echo S3BUCKET; ?>'}});
+                                        var fileChooser = document.getElementById('video-fullvideourl');
+                                        var file = fileChooser.files[0];
+                                        if(file) {
+                                            var updatedFile = fileChooser.files[0]['name'];
+                                            var extension = updatedFile.split('.').pop();
+                                            var updatedFileString = $.now()+'.'+extension;
+                                            var finalImageName = msg.id+'_'+updatedFileString;
+                                            var renameFullFile = '<?php echo FULLVIDEOS; ?>/<?php echo FULLVIDEOS; ?>_'+finalImageName;
+                                                $("#progressForFullVideo").show();    
+                                                var params = {Key: renameFullFile, ContentType: file.type, Body: file};
+                                                bucket.upload(params).on('httpUploadProgress', function(evt) {
+                                                var percentage = parseInt((evt.loaded * 100) / evt.total);
+                                                $("#progress-barForFullVideo")
+                                                    .css("width", percentage + "%")
+                                                    .attr("aria-valuenow", percentage)
+                                                    .text(percentage + "%");
+                                                }).send(function(err, data) {
+                                                    $.ajax({
+                                                        type : 'POST',
+                                                        url : '<?php echo Url::toRoute('video/updatevideo'); ?>',
+                                                        data : 'id='+msg.id+'&fullvideofile='+renameFullFile,
+                                                        dataType: 'json',
+                                                        async: false, 
+                                                        success : function(msgOfFile) {
+                                                            if(msgOfFile.status == 'ok') {
+                                                                document.location.href='<?php echo Url::toRoute('video/index'); ?>';
+                                                            }    
+                                                        }    
+                                                    });
+                                                }); 
+                                        } else {
+                                            document.location.href='<?php echo Url::toRoute('video/index'); ?>';
+                                        }*/
+                                        document.location.href='<?php echo Url::toRoute('video/index'); ?>';
+                                }    
+                            } else {
+                                alert("Something went wrong");
+                                return false;
+                            }
+                            var params = {
+                                //  type : 'video',
+                                //  message : "Here is a blog post about auto posting on Facebook using PHP #php #facebook",
+                                  link : msg.VideoURL,
+                                  picture : msg.thumbimage,
+                                  name : msg.videoTitle,
+                                  //caption :msg.VideoURL,
+                                //  source : msg.VideoURL,
+                                 // description : "Automatically post on Facebook with PHP using Facebook PHP SDK. How to create a Facebook app. Obtain and extend Facebook access tokens. Cron automation."
+                            }
+                          /*  FB.api('/me/feed', 'post', params, function(response) {
+                                          if (!response || response.error) {
+                                            alert("Couldn't Publish Dat'");
+                                          } 
+                                      });*/
+
+                           /* IN.UI.Share().params({
+                                  url: "https://www.example.com"
+                                }).place()
+*/
+                           /* var options = {
+                                       // contenturl: msg.VideoURL,
+                                        contentdeeplinkid:  msg.VideoURL,
+                                        clientid: clientId,
+                                        cookiepolicy: 'single_host_origin',
+                                       // prefilltext: 'Create your Google+ Page too!',
+                                        calltoactionlabel: 'Go',
+                                        calltoactionurl: msg.VideoURL,
+                                        //calltoactiondeeplinkid: '/pages/create'
+                                      };
+                                      console.log(options);
+                                      // Call the render method when appropriate within your app to display
+                                      // the button.
+                                      gapi.interactivepost.render('sharePost', options);*/
+                                     /*  var options = {
+                                              contenturl: 'https://copaseticflows.appspot.com/aprsdotfly',
+                                              contentdeeplinkid: '',
+                                              clientid: clientId,
+                                              cookiepolicy: 'single_host_origin',
+                                              prefilltext: "Engage your users today, create a Google+ page for your business",
+                                              calltoactionlabel: 'Go',
+                                              calltoactionurl: "https://copaseticflows.appspot.com/aprsdotfly",
+                                              calltoactiondeeplinkid: '',
+                                              requestvisibleactions: 'https://schemas.google.com/AddActivity'
+                                          };
+                                          // Call the render method when appropriate within your app to display
+                                          // the button.
+                                          gapi.interactivepost.render('share-button', options);*/
+
+
+                                       
+                        }
+            });
+            return false;
+});
+</script>
+<?php /*
+
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '634837783322685',
+      xfbml      : true,
+      version    : 'v2.5'
+    });
+  };
+
+  (function(d, s, id){
+     var js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = "//connect.facebook.net/en_US/sdk.js";
+     fjs.parentNode.insertBefore(js, fjs);
+   }(document, 'script', 'facebook-jssdk'));
+
+  window.___gcfg = {
+    lang: 'en',
+    parsetags: 'onload'
+  };
+</script>
+<script type="text/javascript"  src="https://platform.linkedin.com/in.js">
+    api_key: 75kwnizivzgmf1
+    //onLoad: Linkedin.init
+    authorize: true
+</script>
+<script src="https://apis.google.com/js/platform.js" async defer></script>
+<script src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script>
+<script src="https://apis.google.com/js/client:platform.js" async defer></script>
+<script>
+    window.pAsyncInit = function() {
+        PDK.init({
+            appId: "4804750724657332984", // Change this
+            cookie: true
+        });
+    };
+
+    (function(d, s, id){
+        var js, pjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) {return;}
+        js = d.createElement(s); js.id = id;
+        js.src = "//assets.pinterest.com/sdk/sdk.js";
+        pjs.parentNode.insertBefore(js, pjs);
+    }(document, 'script', 'pinterest-jssdk'));
+</script>
+<?php */ ?>
+</body>
+</html>
+<?php $this->endPage() ?>

@@ -1,0 +1,663 @@
+<?php
+
+namespace frontend\controllers;
+
+use Yii;
+use frontend\models\Member;
+use frontend\models\MemberSearch;
+use yii\web\Controller;
+use yii\helpers\Url;
+use yii\web\NotFoundHttpException;
+use yii\filters\VerbFilter;
+use frontend\models\User;
+use frontend\models\Forgotpassword;
+use yii\web\UploadedFile;
+
+/**
+ * MemberController implements the CRUD actions for Member model.
+ */
+class MemberController extends Controller {
+
+    public $enableCsrfValidation = false;
+
+    public function behaviors() {
+        return [
+            'verbs' => [
+                'class' => VerbFilter::className(),
+                'actions' => [
+                    'delete' => ['post'],
+                ],
+            ],
+        ];
+    }
+
+    public function actions() {
+        return [
+            'auth' => [
+                'class' => 'yii\authclient\AuthAction',
+                'successCallback' => [$this, 'successCallback'],
+            ],
+        ];
+    }
+
+    public function successCallback($client) {
+        $attributes = $client->getUserAttributes();
+        $name = $attributes['name'];
+        $email = $attributes['email'];
+        //var_dump($attributes);
+        $model = new Member();
+        $rememberMe = false;
+        $model->scenario = 'register';
+        $modelUser = new \backend\models\User();
+        $userData = \backend\models\User::findAll(array("Email" => new \yii\db\Expression("AES_ENCRYPT('" . $email . "',Password('" . AESKEY . "'))")));
+        if (count($userData) > 0) {
+            $username = $email;
+            $userID = $userData[0]->UserID;
+            $userType = $userData[0]->UserType;
+            $session = Yii::$app->session;
+            $session->set('frontuserName', $username);
+            $session->set('frontuserName', $userID);
+            $session->set('frontuserName', $userType);
+            User::loginForUser($username, $rememberMe);
+        } else {
+            $enctrypeml = new \yii\db\Expression("AES_ENCRYPT('" . $email . "',Password('" . AESKEY . "'))");
+            $modelUser->Email = $enctrypeml;
+            $modelUser->UserName = $enctrypeml;
+            $modelUser->Status = '1';
+            $modelUser->UserType = '3';
+            $modelUser->Created = date("Y-m-d H:i:s");
+            $modelUser->save(false);
+            $userID = Yii::$app->db->getLastInsertID();
+            $model->UserID = $userID;
+            $model->FirstName = $name;
+            $model->Email = $email;
+            $model->SignupType = '2';
+            $model->Status = '2';
+            $model->Created = date("Y-m-d H:i:s");
+            $model->save(false);
+            $condition = "Email = AES_ENCRYPT('" . $email . "',Password('" . AESKEY . "')) AND Status = '1' AND UserType IN ('3') ";
+            //$loginData = User::find()->where($condition)->all();
+            $loginData = User::find()->select("*,AES_DECRYPT(Email,Password('" . AESKEY . "')) AS Email,AES_DECRYPT(UserName,Password('" . AESKEY . "')) AS UserName")
+                            ->where($condition)->all();
+            if (count($loginData) > 0) {
+                $username = $loginData[0]->UserName;
+                $userID = $loginData[0]->UserID;
+                $userType = $loginData[0]->UserType;
+                $session = Yii::$app->session;
+                $session->set('frontuserName', $username);
+                $session->set('frontuserName', $userID);
+                $session->set('frontuserName', $userType);
+                User::loginForUser($username, $rememberMe);
+            }
+        }
+    }
+
+    public function actionRegister() {
+
+        $model = new Member();
+        $model->scenario = 'register';
+        $modelUser = new \backend\models\User();
+        if ($model->load(Yii::$app->request->post())) {
+            if ($model->validate()) {
+                $userData = \backend\models\User::findAll(array("UserName" => new \yii\db\Expression("AES_ENCRYPT('" . $_POST["Member"]["UserName"] . "',Password('" . AESKEY . "'))")));
+                if (count($userData) > 0) {
+                    $model->addError('UserName', Yii::t('frontend', 'UsernameExists'));
+                    return $this->render('register', [
+                                'model' => $model,
+                    ]);
+                }
+                preg_match_all('!\d+!',$model->FirstName, $matches);
+                preg_match_all('!\d+!',$model->LastName, $matches12);
+                if(!empty($matches[0])){
+                $model->addError('FirstName',Yii::t('frontend', 'firstnamenum'));
+                return $this->render('register', [
+                            'model' => $model,
+                ]);   
+                }
+                if(!empty($matches12[0])){
+                $model->addError('LastName',Yii::t('frontend', 'lastnamenum'));
+                return $this->render('register', [
+                            'model' => $model,
+                ]);   
+                }
+                $sql = 'SELECT GetUniqueCode() as unique_key';
+                $command = Yii::$app->db->createCommand($sql);
+                $functionvlary = $command->queryAll();
+                $unique_Id = $functionvlary[0]['unique_key'];
+                $userName = $_POST["Member"]["UserName"];
+                $email = $_POST["Member"]["Email"];
+                $model->DOB=date("Y-m-d H:i:s",strtotime($_POST['Member']['DOB']));
+                $modelUser->UserName = new \yii\db\Expression("AES_ENCRYPT('" . $userName . "',Password('" . AESKEY . "'))");
+                $modelUser->Email = new \yii\db\Expression("AES_ENCRYPT('" . $email . "',Password('" . AESKEY . "'))");
+                $modelUser->Password = md5($_POST['Member']['Password']);
+                $modelUser->ConfirmPassword = md5($_POST['Member']['Password']);
+                $modelUser->Status = '1';
+                $modelUser->UserType = '3';
+                $modelUser->Created = date("Y-m-d H:i:s");
+                $modelUser->save(false);
+                $userID = Yii::$app->db->getLastInsertID();
+                $model->UserID = $userID;
+                $model->SignupType = '1';
+                $model->ActivationCode = $unique_Id;
+                $model->Status = '1';
+                $model->Created = date("Y-m-d H:i:s");
+                $model->save(false);
+                Yii::$app->session->setFlash('success', 'We Have Sent you a verification email');
+//                Yii::$app->mailer->compose()
+//                ->setFrom('punit@e2logy.com')
+//                ->setTo($email)
+//                ->setSubject('Account Verification Email')
+//                ->setHtmlBody('<a href="'.Yii::$app->params['domainName'].Url::toRoute('member/verification?Accesstoken='.$unique_Id).'">Click Here to Verifiy Your Email</a>')
+//                ->send();
+                return $this->redirect('login');
+            }
+        } else {
+            return $this->render('register', [
+                        'model' => $model,
+            ]);
+        }
+    }
+
+    /**
+     * Login Controller.
+     * If the model is not found, a 404 HTTP exception will be thrown.
+     * @param integer $id
+     * @return Member the loaded model
+     * @throws NotFoundHttpException if the model cannot be found
+     */
+    public function actionLogin() {
+        $model = new Member();
+        $model->scenario = 'login';
+        if (!\Yii::$app->user->isGuest) {
+            return $this->goHome();
+        }
+        $model = new User();
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            $email = $_POST['User']['Email'];
+            $password = $_POST['User']['Password'];
+            $rememberMe = false;
+            $condition = "Email = AES_ENCRYPT('" . $email . "',Password('" . AESKEY . "')) AND Password = '" . md5($password) . "' AND Status = '1' AND UserType IN ('3') ";
+            //$loginData = User::find()->where($condition)->all();
+            $loginData = User::find()->select("*,AES_DECRYPT(Email,Password('" . AESKEY . "')) AS Email,AES_DECRYPT(UserName,Password('" . AESKEY . "')) AS UserName")
+                            ->where($condition)->all();
+            if (count($loginData) > 0) {
+                $username = $loginData[0]->UserName;
+                $userID = $loginData[0]->UserID;
+                $userType = $loginData[0]->UserType;
+                $session = Yii::$app->session;
+                $session->set('frontuserName', $username);
+                $session->set('frontuserName', $userID);
+                $session->set('frontuserName', $userType);
+                User::loginForUser($username, $rememberMe);
+                return $this->goHome();
+            } else {
+                Yii::$app->session->setFlash('error', Yii::t('frontend', 'LoginFailed'));
+            }
+        }
+        return $this->render('login', [
+                    'model' => $model,
+        ]);
+    }
+
+    /**
+     * forgot password Controller.
+     * If the model is not found, a 404 HTTP exception will be thrown.
+     * @param integer $id
+     * @return Member the loaded model
+     * @throws NotFoundHttpException if the model cannot be found
+     */
+    public function actionForgotpassword() {
+        $model = new Member();
+        $model->scenario = 'forgotpassword';
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            $email = $_POST['Member']['Email'];
+            $modelemail = Member::find()->where(['Email' => $email])->one();
+            if (!empty($modelemail)) {
+                $memberid = $modelemail->UserID;
+                $modelForgotpwd = Forgotpassword::find()->where(['RefID' => $memberid, 'Status' => '1'])->one();
+                if (!empty($modelForgotpwd)) {
+                    $unique_Id = $modelForgotpwd->UniqueCode;
+                } else {
+                    $sql = 'SELECT GetUniqueCode() as unique_key';
+                    $command = Yii::$app->db->createCommand($sql);
+                    $functionvlary = $command->queryAll();
+                    $unique_Id = $functionvlary[0]['unique_key'];
+                    $modelForgotpwd = new Forgotpassword();
+                    $modelForgotpwd->RefID = $memberid;
+                    $modelForgotpwd->UniqueCode = $unique_Id;
+                    $modelForgotpwd->RefTableID = '1';
+                    $modelForgotpwd->Status = '1';
+                    $modelForgotpwd->save();
+                }
+
+//                Yii::$app->mailer->compose()
+//                ->setFrom('punit@e2logy.com')
+//                ->setTo($email)
+//                ->setSubject('Password Reset Link')
+//                ->setHtmlBody('<a href="'.Yii::$app->params['domainName'].Url::toRoute('member/resetpassword?Accesstoken='.$unique_Id).'">Click Here to Reset Your Password</a>')
+//                ->send();
+                Yii::$app->session->setFlash('success', Yii::t('frontend', 'Forgotmailsent'));
+                return $this->render('forgotpassword', [
+                            'model' => $model,
+                ]);
+            }
+        }
+        return $this->render('forgotpassword', [
+                    'model' => $model,
+        ]);
+    }
+
+    /**
+     * password reset Controller.
+     * If the model is not found, a 404 HTTP exception will be thrown.
+     * @param integer $id
+     * @return Member the loaded model
+     * @throws NotFoundHttpException if the model cannot be found
+     */
+    public function actionResetpassword() {
+
+        $request = Yii::$app->request;
+        $Accesstoken = $request->get('Accesstoken');
+        $modelForgotpwd = Forgotpassword::find()->where(['UniqueCode' => $Accesstoken, 'Status' => '1'])->one();
+        if (!empty($modelForgotpwd)) {
+            $memberid = $modelForgotpwd->RefID;
+            $model = User::find()->where(['UserID' => $memberid])->one();
+
+            $model->scenario = 'resetpassword';
+            if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+                $password = $_POST['User']['Password'];
+                $model->Password = md5($password);
+                $model->save();
+                $modelForgotpwd->Status = '2';
+                $modelForgotpwd->save();
+                Yii::$app->session->setFlash('success', Yii::t('frontend', 'ChangePasswordSuccess'));
+                return $this->redirect('login');
+            }
+            return $this->render('resetpassword', [
+                        'model' => $model,
+            ]);
+        } else {
+            return $this->redirect('login');
+        }
+    }
+
+    /**
+     * Account Verification.
+     * If the model is not found, a 404 HTTP exception will be thrown.
+     * @param integer $id
+     * @return Member the loaded model
+     * @throws NotFoundHttpException if the model cannot be found
+     */
+    public function actionVerification() {
+        $request = Yii::$app->request;
+        $Accesstoken = $request->get('Accesstoken');
+        $model = Member::find()->where(['ActivationCode' => $Accesstoken])->one();
+        if (!empty($model)) {
+            if ($model->Status == '1') {
+                $model->Status = '2';
+                $model->ActivatedOn = date("Y-m-d H:i:s");
+                $model->save(false);
+                Yii::$app->session->setFlash('success', Yii::t('frontend', 'AccountVerified'));
+                return $this->render('login', [
+                            'model' => $model,
+                ]);
+            } else {
+                Yii::$app->session->setFlash('error', Yii::t('frontend', 'AccountalreadyVerified'));
+                return $this->render('login', [
+                            'model' => $model,
+                ]);
+            }
+        } else {
+            $model = new Member();
+            return $this->render('login', [
+                        'model' => $model,
+            ]);
+        }
+        //ArrayHelper::toArray($model, $properties);
+    }
+
+    /**
+     * logout action.
+     */
+    public function actionLogout() {
+        Yii::$app->user->logout();
+        return $this->goHome();
+    }
+
+    /**
+     * Finds the Member model based on its primary key value.
+     * If the model is not found, a 404 HTTP exception will be thrown.
+     * @param integer $id
+     * @return Member the loaded model
+     * @throws NotFoundHttpException if the model cannot be found
+     */
+    protected function findModel($id) {
+        if (($model = Member::findOne($id)) !== null) {
+            return $model;
+        } else {
+            throw new NotFoundHttpException('The requested page does not exist.');
+        }
+    }
+
+    public function actionMywatchlist() {
+        /* TYPE:  1-Like,2-Favourite,3-Watchlist */
+        if (!Yii::$app->getUser()->isGuest) {
+            $userID = Yii::$app->user->identity->UserID;
+            $modelMember = \frontend\models\Member::find()->where(['UserID' => $userID])->one();
+            $membrID = $modelMember->MemberID;
+            $type = '3';
+
+            $sql = 'CALL My_Account_Video_List(:UserID,:MemberID,:Type);';
+            $command = Yii::$app->db->createCommand($sql);
+            $command->bindParam(":UserID", $userID);
+            $command->bindParam(":MemberID", $membrID);
+            $command->bindParam("Type", $type);
+            $watchlistdetails = $command->queryAll();
+            return $this->render('mywatchlist', [
+                        'watchlistdetails' => $watchlistdetails
+            ]);
+        } else {
+            Yii::$app->session->setFlash('error', Yii::t('frontend', 'mustlogin'));
+            return $this->redirect('../member/login');
+        }
+    }
+
+    public function actionMyfavourite() {
+        /* TYPE:  1-Like,2-Favourite,3-Watchlist */
+        if (!Yii::$app->getUser()->isGuest) {
+            $userID = Yii::$app->user->identity->UserID;
+            $modelMember = \frontend\models\Member::find()->where(['UserID' => $userID])->one();
+            $membrID = $modelMember->MemberID;
+            $type = '2';
+
+            $sql = 'CALL My_Account_Video_List(:UserID,:MemberID,:Type);';
+            $command = Yii::$app->db->createCommand($sql);
+            $command->bindParam(":UserID", $userID);
+            $command->bindParam(":MemberID", $membrID);
+            $command->bindParam("Type", $type);
+            $favouritelistdetails = $command->queryAll();
+            return $this->render('myfavourite', [
+                        'favouritelistdetails' => $favouritelistdetails
+            ]);
+        } else {
+            Yii::$app->session->setFlash('error', Yii::t('frontend', 'mustlogin'));
+            return $this->redirect('../member/login');
+        }
+    }
+
+    public function actionMyvideo() {
+        /* TYPE:  1-Like,2-Favourite,3-Watchlist */
+        if (!Yii::$app->getUser()->isGuest) {
+            $userID = Yii::$app->user->identity->UserID;
+            $modelMember = \frontend\models\Member::find()->where(['UserID' => $userID])->one();
+            $membrID = $modelMember->MemberID;
+            $type = '';
+
+            $sql = 'CALL My_Account_Video_List(:UserID,:MemberID,:Type);';
+            $command = Yii::$app->db->createCommand($sql);
+            $command->bindParam(":UserID", $userID);
+            $command->bindParam(":MemberID", $membrID);
+            $command->bindParam("Type", $type);
+            $videolistdetails = $command->queryAll();
+            return $this->render('myvideo', [
+                        'videolistdetails' => $videolistdetails
+            ]);
+        } else {
+            Yii::$app->session->setFlash('error', Yii::t('frontend', 'mustlogin'));
+            return $this->redirect('../member/login');
+        }
+    }
+
+    public function actionDeletevideo() {
+        /* TYPE:  1-Like,2-Favourite,3-Watchlist */
+        if (!Yii::$app->getUser()->isGuest) {
+            $sid = $_POST['sid'];
+            $type = $_POST['type'];
+          
+            if($type==''){
+                $modelvideo = \backend\models\Videouploadbysubscribers::find()->where(['ID' => $sid])->one();
+                $modelvideo->delete();
+                if ($modelvideo->delete()) {
+                    echo "success";
+                    die;
+                } else {
+                    echo "fail";
+                    die;
+                }
+            
+            }else if($type!=''){
+               
+                     $modelvideolike = \frontend\models\Videolike::find()->where(['ID' => $sid])->one();
+                $modelvideolike->delete();
+                if ($modelvideolike->delete()) {
+                    echo "success";
+                    die;
+                } else {
+                    echo "fail";
+                    die;
+                }
+            }
+        } else {
+            Yii::$app->session->setFlash('error', Yii::t('frontend', 'mustlogin'));
+            return $this->redirect('../member/login');
+        }
+    }
+
+    public function actionVideoupload() {
+        if (!Yii::$app->getUser()->isGuest) {
+            $model = new \frontend\models\Videouploadbysubscribers;
+
+            return $this->render('videoupload', [
+                        'model' => $model
+            ]);
+        } else {
+            Yii::$app->session->setFlash('error', Yii::t('frontend', 'mustlogin'));
+            return $this->redirect('../member/login');
+        }
+    }
+
+    public function actionUpload() {
+        if (!Yii::$app->getUser()->isGuest) {
+            $model = new \frontend\models\Videouploadbysubscribers();
+
+            if (isset($_FILES["FileInput"])) {
+                ############ Edit settings ##############
+                //  $UploadDirectory = '../../uploads/'; //specify upload directory ends with / (slash)
+                $UploadDirectory = Yii::$app->basePath . '/web/uploads/'; //specify upload directory ends with / (slash)
+                ##########################################
+
+                /*
+                  Note : You will run into errors or blank page if "memory_limit" or "upload_max_filesize" is set to low in "php.ini".
+                  Open "php.ini" file, and search for "memory_limit" or "upload_max_filesize" limit
+                  and set them adequately, also check "post_max_size".
+                 */
+
+                //check if this is an ajax request
+                /* if (!isset($_SERVER['HTTP_X_REQUESTED_WITH'])){
+                  die();
+                  }
+                 */
+
+                //Is file size is less than allowed size.
+                /* if ($_FILES["FileInput"]["size"] > 5242880) {
+                  die("File size is too big!");
+                  } */
+
+                //allowed file type Server side check
+                switch (strtolower($_FILES['FileInput']['type'])) {
+                    //allowed file types
+
+                    case 'video/mp4':
+                        break;
+                    default:
+                        die('Unsupported File!'); //output error
+                }
+
+                $File_Name = strtolower($_FILES['FileInput']['name']);
+                $File_Ext = substr($File_Name, strrpos($File_Name, '.')); //get file extention
+                $Random_Number = rand(0, 9999999999); //Random number to be added to name.
+                $time = time();
+                $NewFileName = $Random_Number . $time . $File_Ext; //new file name
+                $path = $UploadDirectory . $NewFileName;
+                if (move_uploaded_file($_FILES['FileInput']['tmp_name'], $path)) {
+
+                    /* Get MemberId and Userid */
+                    if (!Yii::$app->getUser()->isGuest) {
+                        $userID = Yii::$app->user->identity->UserID;
+                        $modelMember = \frontend\models\Member::find()->where(['UserID' => $userID])->one();
+                        $membrID = $modelMember->MemberID;
+                        if ($model->validate()) {
+                            $model->VideoTitle = $_POST['videotitle'];
+                            $model->MemberID = $membrID;
+                            $model->ApproveStatus = '1'; //1-Pending,2-Published,3-Rejected
+                            $model->VideoFile = $NewFileName;
+                            $model->CreatedBy = $userID;
+                            $model->save();
+                            if ($model->save()) {
+                                Yii::$app->response->redirect(['member/myvideo']);
+                            }
+                        }
+                    }
+                } else {
+                    die('error uploading File!');
+                }
+            } else {
+                die('Something wrong with upload! Is "upload_max_filesize" set correctly?');
+                return $this->render('videoupload', [
+                            'model' => $model
+                ]);
+            }
+        } else {
+            Yii::$app->session->setFlash('error', Yii::t('frontend', 'mustlogin'));
+            return $this->redirect('../member/login');
+        }
+    }
+
+    public function actionMyprofile() {
+
+
+        if (!Yii::$app->getUser()->isGuest) {
+            
+            $userID = Yii::$app->user->identity->UserID;
+            $modelMember = \frontend\models\Member::find()->where(['UserID' => $userID])->one();
+            $membrID = $modelMember->MemberID;
+
+            $model = new Member();
+            $model->scenario = 'update';
+
+            $model = $this->findModel($membrID);
+            if ($model->load(Yii::$app->request->post())) {
+               
+                $fname = $_POST['Member']['FirstName'];
+                $lname = $_POST['Member']['LastName'];
+                $date= $_POST['Member']['DOB'];
+                $gender = $_POST['Member']['Gender'];
+
+                $model->FirstName = $fname;
+                $model->LastName = $lname;
+                $model->DOB = date("Y-m-d", strtotime($date));
+                $model->Gender = $gender;
+                $model->UpdatedBy = Yii::$app->user->identity->UserID;
+                $model->Updated = date('Y-m-d H:i:s');
+                $model->save();
+                if ($model->save()) {
+                     Yii::$app->session->setFlash('success', Yii::t('frontend', 'Profile updated successfully!'));
+                    Yii::$app->response->redirect(['member/myprofile']);
+                }else{
+                      Yii::$app->session->setFlash('error', Yii::t('frontend', 'Sorry!Profile not updated'));
+                    Yii::$app->response->redirect(['member/myprofile']);
+                }
+
+                Yii::$app->response->redirect(['member/myprofile']);
+            } else {
+
+                return $this->render('myprofile', [
+                            'model' => $model
+                ]);
+            }
+        } else {
+            Yii::$app->session->setFlash('error', Yii::t('frontend', 'mustlogin'));
+            return $this->redirect('../member/login');
+        }
+    }
+
+    public function actionChangepassword() {
+        if (!Yii::$app->getUser()->isGuest) {
+            $userID = Yii::$app->user->identity->UserID;
+            $modelMember = \frontend\models\Member::find()->where(['UserID' => $userID])->one();
+            $membrID = $modelMember->MemberID;
+
+            $model = new User();
+            //$model->scenario = 'update';
+            // $model = $this->findModel($userID);
+            $model = \frontend\models\User::find()->where(['UserID' => $userID])->one();
+
+
+
+            //$model = $this->findModel($membrID);
+
+            return $this->render('changepassword', [
+                        'model' => $model
+            ]);
+        } else {
+            Yii::$app->session->setFlash('error', Yii::t('frontend', 'mustlogin'));
+            return $this->redirect('../member/login');
+        }
+    }
+
+    public function actionChangepasswordsave() {
+        if (!Yii::$app->getUser()->isGuest) {
+            $userID = Yii::$app->user->identity->UserID;
+            $modelMember = \frontend\models\Member::find()->where(['UserID' => $userID])->one();
+            $membrID = $modelMember->MemberID;
+
+            //$model = new User();
+            //$model->scenario = 'update';
+            //$model = $this->findModel($userID);
+            $model = \frontend\models\User::find()->where(['UserID' => $userID])->one();
+            // echo "<pre>";print_r($model);die;
+
+            if (isset($_POST)) {
+
+                $model->Password = md5($_POST['newpassword']);
+                $model->UpdatedBy = Yii::$app->user->identity->UserID;
+                $model->Updated = date('Y-m-d H:i:s');
+                $model->save();
+                if ($model->save()) {
+                    Yii::$app->session->setFlash('success', Yii::t('frontend', 'Password changed Successfully!  '));
+                    // Yii::$app->response->redirect(['member/myprofile']);
+                    echo "success";
+                    die;
+                } else {
+                    echo "fail";
+                    die;
+                }
+            }
+        } else {
+            Yii::$app->session->setFlash('error', Yii::t('frontend', 'mustlogin'));
+            return $this->redirect('../member/login');
+        }
+    }
+
+    public function actionPasswordcheck() {
+        if (!Yii::$app->getUser()->isGuest) {
+            $oldpassword = md5($_POST['pwd']);
+
+            $userID = Yii::$app->user->identity->UserID;
+            $model = \frontend\models\User::find()->where(['UserID' => $userID])->one();
+            $dbpwd = $model->Password;
+
+            if ($oldpassword == $dbpwd) {
+                echo "success";
+                die;
+            } else {
+                echo "fail";
+                die;
+            }
+        } else {
+            Yii::$app->session->setFlash('error', Yii::t('frontend', 'mustlogin'));
+            return $this->redirect('../member/login');
+        }
+    }
+
+}

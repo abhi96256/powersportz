@@ -1,0 +1,68 @@
+<?php
+
+use yii\helpers\Html;
+use yii\grid\GridView;
+use yii\helpers\Url;
+use yii\widgets\Pjax;
+
+/* @var $this yii\web\View */
+/* @var $searchModel backend\models\AdvertisemntsSearch */
+/* @var $dataProvider yii\data\ActiveDataProvider */
+
+$this->title = 'Advertisements';
+$this->params['breadcrumbs'][] = $this->title;
+?>
+<div class="advertisements-index">
+
+    <h1><?= Html::encode($this->title) ?></h1>
+    <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
+
+    <p>
+        <?= Html::a('Add', ['create'], ['class' => 'btn btn-success']) ?>
+    </p>
+    <?php \yii\widgets\Pjax::begin(
+            ['id' => 'AdvertisementsList', 'timeout' => false, 'enablePushState' => true, 'clientOptions' => ['method' => 'GET']]
+        ); ?>
+    <?= GridView::widget([
+        'dataProvider' => $dataProvider,
+        'filterModel' => $searchModel,
+        'layout'=>"{items}\n{pager}",
+        'columns' => [
+           
+            [
+    'attribute' => 'Image',
+    'format' => 'html',
+    'value' => function($data) { return Html::img(S3_BUCKETABSOLUTE_PATH.'/'.ADVERISEMENT.'/'.$data['ImagePath']/*, ['width'=>'100']*/); },
+],
+                [
+           'label'=>'Title',
+           'attribute' => 'Content',
+           'format' => 'raw',
+       'value'=>function ($data) {
+               return Html::a(Html::encode($data['Content']),'update?id='.$data['ID'],['data-pjax'=>"0"]);
+        },
+                                'filterInputOptions' => [
+                'class'       => 'form-control',
+                'placeholder' => 'Enter Advertisement Title..'
+             ],
+    ], 
+     [
+    'attribute' => 'FromDate',
+    'filter'=>false,
+],
+                     [
+    'attribute' => 'ToDate',
+    'filter'=>false,
+],
+                [
+                'header' => 'Status',
+                'attribute' => 'Status',
+          'value' => function ($data) {
+                        return \backend\models\Advertisements::getStatusValue($data['Status']);
+                    },
+                'filter'=>Html::activeDropDownList($searchModel, 'Status',array(""=>"All","1"=>"Active","2"=>"Inactive"),['class'=>'form-control','options' => [ "" => ['selected ' => true]]]),
+            ],
+        ],
+    ]); ?>
+    <?php \yii\widgets\Pjax::end(); ?>
+</div>
